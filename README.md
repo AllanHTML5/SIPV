@@ -1,4 +1,7 @@
-# SIPV – Sistema de Inventario y Punto de Venta  
+# SIPV – Sistema de Inventario y Punto de Venta 
+<p align="center">
+  <img src="./logo.png" alt="SIPV Logo" width="300">
+</p>
 Aplicación web desarrollada con Django, MySQL y Docker para la gestión integral de inventario, ventas, compras y facturación en una pulpería o negocio minorista.
 
 ---
@@ -194,3 +197,4 @@ Este proyecto es propiedad del autor y no se distribuye bajo una licencia abiert
 ## 10. Autor
 
 Sistema desarrollado por Allan Flores para usos educativos y comerciales.
+
