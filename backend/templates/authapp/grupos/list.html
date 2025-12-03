@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Grupos{% endblock %}
+{% block content %}
+
+<h1 class="text-3xl font-bold text-slate-800 mb-6">🗂️ Grupos</h1>
+
+<div class="flex justify-between mb-6">
+    <input type="text"
+           placeholder="Buscar grupo..."
+           hx-get="{% url 'authapp:grupos_buscar' %}"
+           hx-trigger="keyup changed delay:300ms"
+           hx-target="#tabla-grupos"
+           class="w-1/3 px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500">
+
+    <a href="{% url 'authapp:grupos_crear' %}"
+       class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-500">
+        ➕ Nuevo Grupo
+    </a>
+</div>
+
+<div id="tabla-grupos">
+    {% include "authapp/grupos/_tabla.html" %}
+</div>
+
+{% endblock %}

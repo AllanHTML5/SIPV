@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard de Compras{% endblock %}
+
+{% block content %}
+
+<h1 class="text-3xl font-bold mb-6 flex items-center gap-2">
+    🛒 Dashboard de Compras
+</h1>
+
+<div class="mb-8">
+    <a href="{% url 'compras:crear_compra_borrador' %}"
+       class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-3 rounded-lg shadow text-lg">
+       <i class="bi bi-plus-circle"></i> Nueva Compra
+    </a>
+</div>
+
+
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+
+    <div class="bg-white shadow p-5 rounded-xl border border-slate-200">
+        <p class="text-slate-500 text-sm">Proveedores activos</p>
+        <p class="text-2xl font-bold">{{ proveedores_activos }}</p>
+    </div>
+
+    <div class="bg-white shadow p-5 rounded-xl border border-slate-200">
+        <p class="text-slate-500 text-sm">Compras últimos 30 días</p>
+        <p class="text-2xl font-bold">{{ compras_30d }}</p>
+    </div>
+
+    <div class="bg-white shadow p-5 rounded-xl border border-slate-200">
+        <p class="text-slate-500 text-sm">Monto últimos 30 días</p>
+        <p class="text-2xl font-bold">L {{ monto_30d|floatformat:2 }}</p>
+    </div>
+
+    <div class="bg-white shadow p-5 rounded-xl border border-slate-200">
+        <p class="text-slate-500 text-sm">Variación de compras</p>
+        <p class="text-xl font-bold">
+            {% if variacion_monto_30d >= 0 %}
+                <span class="text-emerald-600">▲ {{ variacion_monto_30d|floatformat:1 }}%</span>
+            {% else %}
+                <span class="text-red-600">▼ {{ variacion_monto_30d|floatformat:1 }}%</span>
+            {% endif %}
+        </p>
+    </div>
+
+</div>
+
+
+
+<div class="bg-white rounded-xl shadow border p-6 mb-6">
+    <h2 class="text-xl font-semibold mb-4 flex items-center gap-2">
+        📈 Compras últimos 30 días
+    </h2>
+
+    <canvas id="chartCompras30" height="100"></canvas>
+</div>
+
+
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+
+    <div class="bg-white rounded-xl shadow border p-6">
+        <h2 class="text-xl font-semibold mb-4">🥇 Productos más comprados</h2>
+        <canvas id="chartTopProductos" height="120"></canvas>
+    </div>
+
+    <div class="bg-white rounded-xl shadow border p-6">
+        <h2 class="text-xl font-semibold mb-4">🏭 Monto por proveedor</h2>
+        <canvas id="chartPorProveedor" height="120"></canvas>
+    </div>
+
+</div>
+
+
+<h2 class="text-2xl font-bold mb-4">🕒 Compras recientes</h2>
+
+<div class="bg-white rounded-xl shadow border p-4">
+
+    <table class="w-full text-sm">
+        <thead class="border-b text-slate-600">
+            <tr>
+                <th class="py-2 text-left">#</th>
+                <th class="py-2 text-left">Fecha</th>
+                <th class="py-2 text-left">Proveedor</th>
+                <th class="py-2 text-left">Estado</th>
+                <th class="py-2 text-right">Total</th>
+                <th class="py-2 text-center">Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for c in ult_compras %}
+            <tr class="border-b hover:bg-slate-50">
+                <td class="py-2">{{ c.id }}</td>
+                <td class="py-2">{{ c.fecha|date:"Y-m-d" }}</td>
+                <td class="py-2">{{ c.proveedor.nombre|default:"-" }}</td>
+
+                <td class="py-2">
+                    {% if c.estado == "BORRADOR" %}
+                        <span class="px-3 py-1 text-xs rounded-full bg-amber-200 text-amber-700">BORRADOR</span>
+                    {% elif c.estado == "CONFIRMADA" %}
+                        <span class="px-3 py-1 text-xs rounded-full bg-emerald-200 text-emerald-700">CONFIRMADA</span>
+                    {% elif c.estado == "ANULADA" %}
+                        <span class="px-3 py-1 text-xs rounded-full bg-red-200 text-red-700">ANULADA</span>
+                    {% endif %}
+                </td>
+
+                <td class="py-2 text-right">L {{ c.total|floatformat:2 }}</td>
+
+                <td class="py-2 text-center">
+                    <a href="{% url 'compras:detalle_pos_compra' c.id %}"
+                       class="px-3 py-1 rounded bg-blue-600 text-white text-xs hover:bg-blue-700">
+                       Ver
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const chartData = {{ chart_data_json|safe }};
+
+new Chart(document.getElementById("chartCompras30"), {
+    type: "line",
+    data: {
+        labels: chartData.compras_30d.labels,
+        datasets: [{
+            label: "Total",
+            data: chartData.compras_30d.values,
+            borderWidth: 2,
+            borderColor: "#2563eb",
+            backgroundColor: "rgba(37, 99, 235, 0.3)",
+            tension: 0.3,
+        }]
+    }
+});
+
+new Chart(document.getElementById("chartTopProductos"), {
+    type: "bar",
+    data: {
+        labels: chartData.top_productos.labels,
+        datasets: [{
+            label: "Cantidad",
+            data: chartData.top_productos.values,
+            backgroundColor: "#10b981",
+        }]
+    }
+});
+
+new Chart(document.getElementById("chartPorProveedor"), {
+    type: "bar",
+    data: {
+        labels: chartData.por_proveedor.labels,
+        datasets: [{
+            label: "Monto",
+            data: chartData.por_proveedor.values,
+            backgroundColor: "#f59e0b",
+        }]
+    }
+});
+</script>
+
+{% endblock %}

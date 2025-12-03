@@ -1,0 +1,13 @@
+{% if productos %}
+  {% for p in productos %}
+    <div class="px-3 py-2 hover:bg-slate-100 cursor-pointer"
+         onclick="seleccionarProducto('{{ p.id }}', '{{ p.nombre|escapejs }}')">
+      {{ p.nombre }}
+      <span class="text-xs text-slate-500">({{ p.codigo_barras|default:'—' }})</span>
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="px-3 py-2 text-slate-500 text-sm">
+    Sin resultados
+  </div>
+{% endif %}

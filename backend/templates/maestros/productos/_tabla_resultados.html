@@ -1,0 +1,39 @@
+<table class="min-w-full divide-y divide-slate-200">
+    <thead class="bg-slate-100">
+        <tr>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Imagen</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Nombre</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Proveedor</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Categoría</th>
+            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-600 uppercase">Precio</th>
+            <th class="px-6 py-3"></th>
+        </tr>
+    </thead>
+
+    <tbody class="bg-white divide-y divide-slate-200">
+        {% for p in productos %}
+        <tr class="hover:bg-slate-50 transition">
+            <td class="px-6 py-4">
+                {% if p.imagen %}
+                <img src="{{ p.imagen.url }}" class="h-12 w-12 object-cover rounded-lg shadow">
+                {% else %}
+                <div class="h-12 w-12 bg-slate-200 flex items-center justify-center rounded-lg text-xs text-slate-500">N/A</div>
+                {% endif %}
+            </td>
+
+            <td class="px-6 py-4 font-medium">{{ p.nombre }}</td>
+            <td class="px-6 py-4">{{ p.proveedor }}</td>
+            <td class="px-6 py-4">{{ p.categoria }}</td>
+            <td class="px-6 py-4 font-semibold">L {{ p.precio_venta }}</td>
+
+            <td class="px-6 py-4 text-right">
+                <a href="{% url 'maestros:productos_editar' p.id %}" class="text-blue-600 hover:text-blue-800">Editar</a>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="px-6 py-4 text-center text-slate-500">Sin resultados…</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

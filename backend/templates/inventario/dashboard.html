@@ -1,0 +1,356 @@
+{% extends "base.html" %}
+{% block title %}Inventario — Dashboard{% endblock %}
+
+{% block content %}
+
+
+<div class="flex flex-wrap items-center gap-2 mb-4">
+
+
+  {% if perms.inventario.view_existencia %}
+  <a href="{% url 'inventario:stock_list' %}"
+     class="px-4 py-2 rounded bg-slate-900 text-white hover:bg-slate-800 dark:bg-slate-700 dark:hover:bg-slate-600 transition">
+    📦 Ver Stock
+  </a>
+  {% endif %}
+
+
+  {% if perms.inventario.view_movimientoinventario %}
+  <a href="{% url 'inventario:movimientos' %}"
+     class="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-500 transition">
+    📄 Ver Movimientos
+  </a>
+  {% endif %}
+
+  {% if perms.inventario.add_movimientoinventario %}
+  <button
+    class="px-4 py-2 rounded bg-emerald-600 text-white hover:bg-emerald-500 transition"
+    hx-get="{% url 'inventario:ajuste_modal' %}"
+    hx-target="#modal"
+    hx-trigger="click">
+    ➕ Ajuste de Inventario
+  </button>
+  {% endif %}
+
+
+  {% if perms.ventas.add_venta %}
+  <a class="ml-auto px-3 py-2 rounded border dark:border-slate-600" href="/pos/">
+    Ir al POS
+  </a>
+  {% endif %}
+</div>
+
+<h1 class="text-xl font-semibold mb-4">Dashboard de Inventario</h1>
+
+
+
+
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+
+  <!-- Total Productos -->
+  <div class="relative bg-white rounded-xl shadow p-5 overflow-hidden">
+    <!-- Ícono esquina superior derecha -->
+    <div class="absolute top-3 right-3 text-amber-400/80 text-xl">
+      <i class="bi bi-box-seam-fill"></i>
+    </div>
+
+    <div class="text-sm text-slate-500 font-medium">Total productos</div>
+    <div class="text-2xl font-bold mt-1">{{ total_items|default:"0" }}</div>
+    <div class="text-xs text-slate-400 mt-1">
+      {{ inv_total_unidades|default:"0" }} unidades en stock
+    </div>
+  </div>
+
+  <!-- Valor Inventario -->
+  <div class="relative bg-white rounded-xl shadow p-5 overflow-hidden">
+    <!-- Ícono esquina superior derecha -->
+    <div class="absolute top-3 right-3 text-emerald-400/80 text-xl">
+      <i class="bi bi-wallet2"></i>
+    </div>
+
+    <div class="text-sm text-slate-500 font-medium">Valor inventario</div>
+    <div class="text-2xl font-bold mt-1">L {{ inv_valor_costo|floatformat:2 }}</div>
+
+    <!-- Línea de potencial -->
+    <div class="text-xs mt-1">
+      <span class="text-emerald-500 font-semibold">
+        Potencial: L {{ inv_valor_pot|floatformat:2 }}
+      </span>
+    </div>
+
+    <div class="text-xs text-slate-400 mt-1">
+      Costo total de compra · Potencial a precio de venta
+    </div>
+  </div>
+
+  <!-- Estado del Stock -->
+  <div class="relative bg-white rounded-xl shadow p-5 overflow-hidden">
+    <!-- Ícono esquina superior derecha -->
+    <div class="absolute top-3 right-3 text-amber-500/80 text-xl">
+      <i class="bi bi-exclamation-triangle-fill"></i>
+    </div>
+
+    <div class="text-sm text-slate-500 font-medium">Estado del stock</div>
+    <div class="text-2xl font-bold mt-1">{{ inv_agotados|default:"0" }}</div>
+
+    <div class="text-xs text-slate-400 mt-1">
+      {{ inv_agotados|default:"0" }} agotados,
+      {{ inv_bajos|default:"0" }} bajos
+    </div>
+  </div>
+
+</div>
+
+
+
+
+
+
+
+
+<!-- SOLO aquí forzamos look claro en tarjetas de gráficos -->
+<div class="force-light grid grid-cols-1 xl:grid-cols-2 gap-6 mt-4">
+
+  <!-- Compras vs Ventas (30 días) -->
+  <div class="card bg-white rounded-xl p-4 shadow">
+    <div class="font-semibold mb-2 muted">Compras vs Ventas (30 días)</div>
+    <div class="chart-wrap">
+      <div id="emptyComprasVentas" class="empty-msg">Sin datos</div>
+      <canvas id="chartComprasVentas" class="h-full"></canvas>
+    </div>
+  </div>
+
+  <!-- Top productos vendidos -->
+  <div class="card bg-white rounded-xl p-4 shadow">
+    <div class="font-semibold mb-2 muted">Top 10 productos vendidos</div>
+    <div class="chart-wrap">
+      <div id="emptyTopVendidos" class="empty-msg">Sin datos</div>
+      <canvas id="chartTopVendidos" class="h-full"></canvas>
+    </div>
+  </div>
+
+  <!-- Stock por categoría -->
+  <div class="card bg-white rounded-xl p-4 shadow">
+    <div class="font-semibold mb-2 muted">Stock por categoría</div>
+    <div class="chart-wrap">
+      <div id="emptyStockCat" class="empty-msg">Sin datos</div>
+      <canvas id="chartStockCat" class="h-full"></canvas>
+    </div>
+  </div>
+
+  <!-- Bajo stock vs OK -->
+  <div class="card bg-white rounded-xl p-4 shadow" data-card="donut">
+    <div class="font-semibold mb-2 muted">Bajo stock vs OK</div>
+    <div class="chart-wrap">
+      <div id="emptyBajoStock" class="empty-msg">Sin datos</div>
+      <canvas id="chartBajoStock" class="h-full"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- KPIs y tablas -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 my-6">
+  <div class="bg-white rounded-xl p-4 shadow">
+    <div class="text-slate-500 text-sm">Productos activos</div>
+    <div class="text-3xl font-semibold">{{ total_items }}</div>
+  </div>
+  <div class="bg-white rounded-xl p-4 shadow">
+    <div class="text-slate-500 text-sm">Con alerta stock mínimo</div>
+    <div class="text-3xl font-semibold">{{ con_alerta }}</div>
+  </div>
+  <div class="bg-white rounded-xl p-4 shadow">
+    <div class="text-slate-500 text-sm">Movimientos recientes</div>
+    <div class="text-3xl font-semibold">{{ movs|length }}</div>
+  </div>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+  <div class="bg-white rounded-xl p-4 shadow">
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold">Stock bajo mínimo</h2>
+      <a href="{% url 'inventario:stock_list' %}" class="text-sm text-blue-600 hover:underline">Ver stock</a>
+    </div>
+<div class="overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="text-left text-slate-500">
+      <tr><th>Producto</th><th>Min</th><th>Stock</th></tr>
+    </thead>
+    <tbody>
+    {% for p in bajo_min %}
+      <tr class="border-t">
+        <td class="py-2">{{ p.nombre }}</td>
+        <td>{{ p.stock_minimo|floatformat:0 }}</td>
+        <td class="font-semibold text-red-600">{{ p.stock|floatformat:0 }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="3" class="py-3 text-slate-500">Sin alertas ??</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+  </div>
+
+  <div class="bg-white rounded-xl p-4 shadow">
+    <h2 class="font-semibold mb-3">Últimos movimientos</h2>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead class="text-left text-slate-500">
+          <tr><th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cant</th></tr>
+        </thead>
+<tbody>
+{% for m in movs %}
+  <tr class="border-t">
+    <td class="py-2">{{ m.creado|date:"Y-m-d H:i" }}</td>
+    <td>{{ m.producto.nombre }}</td>
+    <td>{{ m.tipo }}</td>
+    <td class="tabular-nums">{{ m.cantidad|floatformat:0 }}</td>
+  </tr>
+{% empty %}
+  <tr><td colspan="4" class="py-3 text-slate-500">Sin movimientos</td></tr>
+{% endfor %}
+</tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+
+<!-- Estilos locales del dashboard -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+<style>
+  canvas { background: transparent !important; }
+
+  .dark .force-light .card { background:#fff !important; border:1px solid #e5e7eb !important; }
+  .dark .force-light .muted { color:#475569 !important; }
+
+
+  .empty-msg{
+    display:flex;                 
+    position:absolute; inset:0;
+    align-items:center; justify-content:center;
+    color:#64748b; font-size:0.95rem;
+1    z-index: 10;               
+  }
+  .chart-wrap{
+    position:relative; height:14rem; 
+    background: transparent;
+  }
+  .chart-wrap canvas{
+    position:relative;
+    z-index:0;                   
+    height:100% !important;      
+    width:100% !important;
+  }
+</style>
+
+<script>
+(async function () {
+  
+  async function ensureChart() {
+    if (window.Chart) return;
+    await new Promise((ok, err) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+      s.onload = ok; s.onerror = err;
+      document.head.appendChild(s);
+    });
+  }
+
+  function showEmpty(id, show) {
+    const el = document.getElementById(id);
+    if (el) el.style.display = show ? 'flex' : 'none';
+  }
+  const isEmpty = arr => !arr || !arr.length || arr.every(v => (+v||0) === 0);
+
+  await ensureChart();
+
+  const res = await fetch("{% url 'inventario:dashboard_data' %}");
+  const data = await res.json();
+  console.log('[inventario/dashboard-data]', data);
+
+  // asd
+  (function(){
+    const empty = !data.compras_ventas || !data.compras_ventas.labels?.length ||
+                  (isEmpty(data.compras_ventas.compras) && isEmpty(data.compras_ventas.ventas));
+    showEmpty('emptyComprasVentas', empty);
+    if (empty) return;
+
+    const ctx = document.getElementById('chartComprasVentas');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: data.compras_ventas.labels,
+        datasets: [
+          { label: 'Compras', data: data.compras_ventas.compras, borderWidth: 2, tension: .25 },
+          { label: 'Ventas',  data: data.compras_ventas.ventas,  borderWidth: 2, tension: .25 },
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  })();
+
+
+  (function(){
+    const empty = !data.top_vendidos || isEmpty(data.top_vendidos.values);
+    showEmpty('emptyTopVendidos', empty);
+    if (empty) return;
+
+    const ctx = document.getElementById('chartTopVendidos');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.top_vendidos.labels,
+        datasets: [{ label: 'Unidades', data: data.top_vendidos.values }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  })();
+
+
+  (function(){
+    const empty = !data.stock_por_categoria || isEmpty(data.stock_por_categoria.values);
+    showEmpty('emptyStockCat', empty);
+    if (empty) return;
+
+    const ctx = document.getElementById('chartStockCat');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: data.stock_por_categoria.labels,
+        datasets: [{ label: 'Stock', data: data.stock_por_categoria.values }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y' }
+    });
+  })();
+
+
+  (function(){
+    const alerta = data?.totales?.con_alerta || 0;
+    const ok = (data?.totales?.total_items || 0) - alerta;
+    const empty = alerta <= 0 && ok <= 0;
+    showEmpty('emptyBajoStock', empty);
+    if (empty) return;
+
+    const ctx = document.getElementById('chartBajoStock');
+    if (!ctx) return;
+    new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Con alerta', 'OK'],
+        datasets: [{ data: [alerta, ok] }]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+  })();
+})();
+</script>
+{% endblock %}

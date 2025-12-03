@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Factura {{ factura.numero }}</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 25px;
+            padding: 0;
+            color: #333;
+        }
+
+        .factura-box {
+            max-width: 380px; 
+            margin: auto;
+            padding: 15px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+        }
+
+        h2, h3 {
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        .datos {
+            margin-top: 15px;
+            font-size: 14px;
+        }
+
+        .datos strong {
+            display: inline-block;
+            width: 110px;
+        }
+
+        table {
+            width: 100%;
+            margin-top: 15px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        th, td {
+            border-bottom: 1px solid #ddd;
+            padding: 6px 0;
+            text-align: left;
+        }
+
+        th {
+            font-size: 13px;
+            text-transform: uppercase;
+        }
+
+        .totales {
+            margin-top: 10px;
+            font-size: 15px;
+        }
+
+        .totales div {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+        }
+
+        .footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #777;
+        }
+
+        @media print {
+            .factura-box {
+                border: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="factura-box">
+
+    <h2>FACTURA</h2>
+    <h3>{{ factura.numero }}</h3>
+
+    <div class="datos">
+        {% if factura.tipo == "VENTA" %}
+            <strong>Cliente:</strong> {{ factura.cliente.nombre }} <br>
+        {% else %}
+            <strong>Proveedor:</strong> {{ factura.proveedor.nombre }} <br>
+        {% endif %}
+
+        <strong>Fecha:</strong> {{ factura.fecha|date:"d/m/Y H:i" }} <br>
+        <strong>Método pago:</strong> {{ factura.metodo_pago }} <br>
+
+        {% if factura.referencia_pago %}
+        <strong>Referencia:</strong> {{ factura.referencia_pago }} <br>
+        {% endif %}
+
+        {% if factura.metodo_pago == "EFECTIVO" %}
+        <strong>Efectivo:</strong> L {{ factura.efectivo_recibido }} <br>
+        <strong>Cambio:</strong> L {{ factura.cambio_entregado }} <br>
+        {% endif %}
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Producto</th>
+            <th>Cant</th>
+            <th>Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for d in factura.detalles.all %}
+        <tr>
+            <td>{{ d.producto.nombre }}</td>
+            <td>{{ d.cantidad }}</td>
+            <td>L {{ d.total }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="totales">
+        <div><span>Subtotal:</span><strong>L {{ factura.subtotal }}</strong></div>
+        <div><span>Impuesto:</span><strong>L {{ factura.impuesto }}</strong></div>
+        <div style="font-size:17px;"><span>Total:</span><strong>L {{ factura.total }}</strong></div>
+    </div>
+
+    <div class="footer">
+        Gracias por su compra.<br>
+        SIPV – Sistema de Inventario y Punto de Venta.
+    </div>
+
+</div>
+
+</body>
+</html>

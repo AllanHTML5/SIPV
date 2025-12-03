@@ -1,0 +1,46 @@
+<table class="w-full text-left border-collapse mt-4">
+    <thead>
+        <tr class="bg-slate-100 text-slate-700">
+            <th class="p-3">Usuario</th>
+            <th class="p-3">Nombre</th>
+            <th class="p-3">Email</th>
+            <th class="p-3">Activo</th>
+            <th class="p-3 text-right">Acciones</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for u in usuarios %}
+        <tr class="border-b hover:bg-slate-50">
+            <td class="p-3 font-semibold">{{ u.username }}</td>
+            <td class="p-3">{{ u.first_name }} {{ u.last_name }}</td>
+            <td class="p-3">{{ u.email }}</td>
+            <td class="p-3">
+                {% if u.is_active %}
+                    <span class="text-green-600 font-bold">Activo</span>
+                {% else %}
+                    <span class="text-red-600 font-bold">Inactivo</span>
+                {% endif %}
+            </td>
+            <td class="p-3 text-right space-x-2">
+
+                <a href="{% url 'authapp:usuarios_editar' u.id %}"
+                   class="text-blue-600 hover:underline">Editar</a>
+
+                <a href="{% url 'authapp:usuarios_password' u.id %}"
+                   class="text-yellow-600 hover:underline">Contraseña</a>
+
+                <a href="{% url 'authapp:usuarios_eliminar' u.id %}"
+                   class="text-red-600 hover:underline">Eliminar</a>
+
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="5" class="p-4 text-center text-slate-500">
+                No hay usuarios registrados.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>

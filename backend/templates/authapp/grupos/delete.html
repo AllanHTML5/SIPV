@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Eliminar Grupo{% endblock %}
+{% block content %}
+
+<h1 class="text-3xl font-bold text-red-600 mb-6">❌ Eliminar Grupo</h1>
+
+<div class="bg-white shadow-xl rounded-xl p-8 border border-slate-200 max-w-lg">
+
+<p class="text-lg mb-6">
+¿Estás seguro de que deseas eliminar el grupo <strong>{{ grupo.name }}</strong>?
+</p>
+
+<form method="POST">
+    {% csrf_token %}
+
+    <div class="flex justify-end gap-3">
+        <a href="{% url 'authapp:grupos_lista' %}"
+           class="px-4 py-2 bg-slate-300 rounded-lg hover:bg-slate-400">Cancelar</a>
+
+        <button type="submit"
+                class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-500">
+            Eliminar
+        </button>
+    </div>
+
+</form>
+
+</div>
+
+{% endblock %}

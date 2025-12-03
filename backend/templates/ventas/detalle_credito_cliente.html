@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% block content %}
+<!-- Botones volver -->
+<div class="flex gap-3 mb-6">
+
+    <!-- Volver al Dashboard de Créditos -->
+    <a href="{% url 'ventas:cartera_dashboard' %}"
+       class="inline-flex items-center gap-2 bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-lg shadow">
+        📊 Dashboard Créditos
+    </a>
+
+    <!-- Volver a Pendientes -->
+    <a href="{% url 'ventas:cartera_pendientes' %}"
+       class="inline-flex items-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg shadow">
+        📁 Créditos Pendientes
+    </a>
+
+</div>
+
+<h1 class="text-3xl font-bold text-slate-800 mb-6">
+    Perfil Financiero — {{ cliente.nombre }}
+</h1>
+
+<!-- Información del Cliente -->
+<div class="p-6 bg-white shadow border border-slate-200 rounded-xl mb-8">
+    <h2 class="text-xl font-semibold text-slate-700 mb-4">📇 Información del Cliente</h2>
+
+    <p><strong>Nombre:</strong> {{ cliente.nombre }}</p>
+    <p><strong>Teléfono:</strong> {{ cliente.telefono|default:"—" }}</p>
+    <p><strong>Email:</strong> {{ cliente.email|default:"—" }}</p>
+</div>
+
+<!-- Totales -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+
+    <div class="bg-white shadow p-5 rounded-xl border border-slate-200">
+        <p class="text-slate-500 text-sm">Total en Créditos</p>
+        <p class="text-2xl font-bold text-blue-700">L {{ total_credito|floatformat:2 }}</p>
+    </div>
+
+    <div class="bg-white shadow p-5 rounded-xl border border-slate-200">
+        <p class="text-slate-500 text-sm">Total Abonado</p>
+        <p class="text-2xl font-bold text-emerald-700">L {{ total_abonado|floatformat:2 }}</p>
+    </div>
+
+    <div class="bg-white shadow p-5 rounded-xl border border-slate-200">
+        <p class="text-slate-500 text-sm">Saldo Pendiente</p>
+        <p class="text-2xl font-bold text-red-600">L {{ saldo_pendiente|floatformat:2 }}</p>
+    </div>
+
+</div>
+
+<!-- Créditos Recientes -->
+<h2 class="text-xl font-semibold mb-3">🧾 Créditos Recientes</h2>
+
+<div class="bg-white border shadow rounded-xl max-h-64 overflow-y-auto mb-10">
+
+    <table class="min-w-full text-left">
+        <thead class="bg-slate-100 text-slate-700 sticky top-0">
+            <tr>
+                <th class="p-3">Venta</th>
+                <th class="p-3">Monto</th>
+                <th class="p-3">Pendiente</th>
+                <th class="p-3">Vence</th>
+            </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-200">
+            {% for c in creditos_recientes %}
+            <tr class="hover:bg-slate-50 cursor-pointer"
+                onclick="window.location.href='/ventas/cartera/{{ c.id }}/'">
+
+                <td class="p-3 font-semibold">#{{ c.venta.numero }}</td>
+                <td class="p-3">L {{ c.monto_total }}</td>
+                <td class="p-3 font-bold text-blue-700">L {{ c.saldo_pendiente }}</td>
+                <td class="p-3">{{ c.fecha_vencimiento }}</td>
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="p-4 text-center text-slate-500">No hay créditos recientes.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+
+<!-- Abonos Recientes -->
+<h2 class="text-xl font-semibold mb-3">💰 Abonos Recientes</h2>
+
+<div class="bg-white border shadow rounded-xl max-h-64 overflow-y-auto">
+
+    <table class="min-w-full text-left">
+        <thead class="bg-slate-100 text-slate-700 sticky top-0">
+            <tr>
+                <th class="p-3">Monto</th>
+                <th class="p-3">Fecha</th>
+                <th class="p-3">Cuenta</th>
+            </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-200">
+            {% for ab in abonos_recientes %}
+            <tr class="hover:bg-slate-50 cursor-pointer"
+                onclick="window.location.href='/ventas/cartera/{{ ab.cuenta.id }}/'">
+
+                <td class="p-3 font-semibold">L {{ ab.monto }}</td>
+                <td class="p-3">{{ ab.fecha }}</td>
+                <td class="p-3">#{{ ab.cuenta.venta.numero }}</td>
+
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" class="p-4 text-center text-slate-500">No hay abonos registrados.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+
+{% endblock %}

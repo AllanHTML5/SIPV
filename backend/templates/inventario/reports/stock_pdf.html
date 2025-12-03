@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>Reporte de Stock</title>
+</head>
+
+<body>
+
+<div class="header">
+    <h1>Reporte de Stock</h1>
+    <h2>Inventario General</h2>
+
+    <div class="meta">
+        <strong>Generado por:</strong> {{ usuario }} <br>
+        <strong>Fecha:</strong> {{ generado|date:"d/m/Y H:i" }} <br>
+        {% if q %}
+        <strong>Búsqueda:</strong> "{{ q }}" <br>
+        {% endif %}
+    </div>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th style="width: 35%;">Producto</th>
+            <th style="width: 15%;">Código</th>
+            <th style="width: 15%;">Proveedor</th>
+            <th style="width: 10%;">Precio</th>
+            <th style="width: 10%;">Mín</th>
+            <th style="width: 10%;">Stock</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for p in productos %}
+        <tr>
+            <td>{{ p.nombre }}</td>
+            <td>{{ p.codigo_barras|default:"—" }}</td>
+            <td>{{ p.proveedor.nombre|default:"—" }}</td>
+            <td class="num">L {{ p.precio_venta }}</td>
+            <td class="num">{{ p.stock_minimo }}</td>
+            <td class="num">{{ p.stock|default:"0" }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" style="text-align:center; padding:20px; color:#64748b;">
+                No hay productos para mostrar.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="footer-space"></div>
+
+</body>
+</html>

@@ -1,0 +1,194 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Registrar Compra{% endblock %}
+
+{% block content %}
+
+<div x-data="CompraPOS()" class="space-y-6">
+
+    <h1 class="text-3xl font-bold text-slate-800">Registrar Compra</h1>
+
+    <!-- DATOS GENERALES -->
+    <div class="bg-white rounded-xl shadow p-4 border space-y-4">
+        <h2 class="text-xl font-semibold">Datos generales</h2>
+
+        <label class="text-sm text-slate-600">Proveedor</label>
+<select name="proveedor" class="border rounded px-3 py-2 w-full">
+    <option value="">Seleccione proveedor...</option>
+
+    {% for p in proveedores %}
+    <option value="{{ p.id }}">{{ p.nombre }}</option>
+    {% endfor %}
+</select>
+    </div>
+
+    <!-- BUSCAR PRODUCTO -->
+    <div class="bg-white p-4 rounded-xl shadow border">
+        <h2 class="text-xl font-semibold mb-3">Agregar productos</h2>
+
+        <div x-data="buscarProd()" class="relative">
+            <input x-model="query" @input="buscar"
+                placeholder="Buscar por nombre o código..."
+                class="border rounded-lg px-3 py-2 w-full"
+            >
+
+            <div x-show="resultados.length > 0"
+                class="absolute mt-1 w-full bg-white border rounded-lg shadow z-20">
+                <template x-for="p in resultados" :key="p.id">
+                    <div @click="select(p)"
+                        class="px-3 py-2 hover:bg-slate-100 cursor-pointer flex justify-between">
+                        <span x-text="p.nombre"></span>
+                        <span>L <span x-text="p.precio"></span></span>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- LINEAS -->
+    <div class="space-y-4">
+        <template x-for="l in lineas" :key="l.id">
+            <div class="bg-white border p-4 rounded-xl shadow flex justify-between">
+                <div>
+                    <h3 class="font-bold" x-text="l.producto"></h3>
+
+                    <div class="mt-2 flex gap-2">
+                        <button @click="actualizar(l.id, l.cantidad - 1)"
+                                class="px-3 py-2 bg-slate-200 rounded-lg">-</button>
+                        <span class="text-lg font-semibold w-10 text-center"
+                              x-text="l.cantidad"></span>
+                        <button @click="actualizar(l.id, l.cantidad + 1)"
+                                class="px-3 py-2 bg-slate-200 rounded-lg">+</button>
+                    </div>
+                </div>
+
+                <div class="text-right">
+                    <p class="text-xl font-bold">L <span x-text="l.subtotal"></span></p>
+                    <button @click="eliminar(l.id)"
+                            class="text-red-600 hover:underline text-sm">Eliminar</button>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- TOTALES -->
+    <div class="bg-white p-4 border rounded-xl shadow text-right space-y-1">
+        <p>Subtotal: <strong>L <span x-text="totales.subtotal"></span></strong></p>
+        <p>Impuesto: <strong>L <span x-text="totales.impuesto"></span></strong></p>
+        <p class="text-3xl">TOTAL: <strong>L <span x-text="totales.total"></span></strong></p>
+    </div>
+
+    <!-- BOTÓN CONFIRMAR -->
+    <button @click="guardar"
+            class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-lg text-xl">
+        Guardar Compra
+    </button>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("alpine:init", () => {
+
+    Alpine.data("buscarProd", () => ({
+        query: "",
+        resultados: [],
+        buscar() {
+            if (this.query.length < 2) { this.resultados = []; return; }
+
+            clearTimeout(this._t);
+            this._t = setTimeout(async () => {
+                const r = await fetch(`/compras/api/buscar-productos/?q=${this.query}`);
+                this.resultados = (await r.json()).results;
+            }, 200);
+        },
+        async select(p) {
+            this.query = "";
+            this.resultados = [];
+            await CompraPOSObj.agregar(p.id);
+        }
+    }));
+
+
+    let CompraPOSObj = null;
+
+    Alpine.data("CompraPOS", () => ({
+        compraId: null,
+        proveedor: "",
+        lineas: [],
+        totales: { subtotal: "0.00", impuesto: "0.00", total: "0.00" },
+
+        init() {
+            CompraPOSObj = this;
+        },
+
+        async agregar(prodId) {
+            if (!this.compraId) {
+
+                const res = await fetch("/compras/api/crear-temporal/");
+                const data = await res.json();
+                this.compraId = data.id;
+            }
+
+            await fetch(`/compras/api/agregar/`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+                body: JSON.stringify({ compra_id: this.compraId, producto_id: prodId })
+            });
+
+            await this.cargar();
+        },
+
+        async cargar() {
+            const r = await fetch(`/compras/api/lineas/${this.compraId}/`);
+            const data = await r.json();
+            this.lineas = data.lineas;
+            this.totales = data.totales;
+        },
+
+        async actualizar(id, cant) {
+            if (cant <= 0) return this.eliminar(id);
+
+            await fetch("/compras/api/actualizar/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+                body: JSON.stringify({ linea_id: id, cantidad: cant })
+            });
+
+            await this.cargar();
+        },
+
+        async eliminar(id) {
+            await fetch("/compras/api/eliminar/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+                body: JSON.stringify({ linea_id: id })
+            });
+
+            await this.cargar();
+        },
+
+        async guardar() {
+            if (!this.proveedor || !this.compraId) {
+                alert("Debe seleccionar proveedor y agregar productos.");
+                return;
+            }
+
+            await fetch("/compras/api/guardar/", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "X-CSRFToken": "{{ csrf_token }}" },
+                body: JSON.stringify({
+                    compra_id: this.compraId,
+                    proveedor: this.proveedor
+                })
+            });
+
+            window.location.href = `/compras/detalle/${this.compraId}/`;
+        }
+    }));
+});
+</script>
+{% endblock %}

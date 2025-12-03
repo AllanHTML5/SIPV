@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Usuarios{% endblock %}
+
+{% block content %}
+
+<h1 class="text-3xl font-bold text-slate-800 mb-6">👥 Usuarios</h1>
+
+<div class="flex justify-between mb-6">
+    <input type="text"
+           placeholder="Buscar usuario por nombre, username o email..."
+           hx-get="{% url 'authapp:usuarios_buscar' %}"
+           hx-trigger="keyup changed delay:300ms"
+           hx-target="#tabla-usuarios"
+           class="w-1/2 px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500">
+
+    <a href="{% url 'authapp:usuarios_crear' %}"
+       class="px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-500 transition">
+        ➕ Nuevo Usuario
+    </a>
+</div>
+
+<div id="tabla-usuarios">
+    {% include 'authapp/usuarios/_tabla.html' %}
+</div>
+
+{% endblock %}

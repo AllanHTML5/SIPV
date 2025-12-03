@@ -1,0 +1,14 @@
+{% if productos %}
+  {% for p in productos %}
+    <div class="px-3 py-2 hover:bg-slate-100 cursor-pointer"
+         onclick="seleccionarProducto('{{ p.id }}', '{{ p.nombre }}')">
+      {{ p.nombre }}
+    </div>
+  {% endfor %}
+{% else %}
+  <div class="px-3 py-2 text-slate-500">No hay resultados</div>
+{% endif %}
+
+<script>
+document.getElementById("autocomplete-producto").classList.remove("hidden");
+</script>

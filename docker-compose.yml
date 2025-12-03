@@ -1,0 +1,121 @@
+version: "3.9"
+
+services:
+  # ==========================
+  # MySQL PRIMARY (escrituras)
+  # ==========================
+  mysql_primary:
+    image: mysql:8.0
+    container_name: mysql_primary
+    restart: unless-stopped
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - primary_data:/var/lib/mysql
+      - ./docker/mysql/global/my.cnf:/etc/mysql/my.cnf:ro
+      - ./docker/mysql/primary/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+      - ./docker/mysql/primary/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - sipv_net
+
+  # ==========================
+  # MySQL REPLICA (lecturas)
+  # ==========================
+  mysql_replica:
+    image: mysql:8.0
+    container_name: mysql_replica
+    restart: unless-stopped
+    command: ["--default-authentication-plugin=mysql_native_password"]
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3308:3306"
+    volumes:
+      - replica_data:/var/lib/mysql
+      - ./docker/mysql/replica/my.cnf:/etc/mysql/conf.d/my.cnf:ro
+    depends_on:
+      mysql_primary:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - sipv_net
+
+  # ==========================
+  # Django (sipv_web)
+  # ==========================
+  web:
+    build: .
+    container_name: sipv_web
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      DB_HOST: mysql_primary
+      DB_PORT: ${DB_PORT}
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+
+      SECRET_KEY: ${SECRET_KEY}
+      DEBUG: ${DEBUG}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+    volumes:
+      - ./backend:/app
+      - ./staticfiles:/app/staticfiles
+    depends_on:
+      mysql_primary:
+        condition: service_healthy
+    ports:
+      - "80:8000"
+    command: bash -lc "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    networks:
+      - sipv_net
+
+  # ==========================
+  # Adminer
+  # ==========================
+  adminer:
+    image: adminer:latest
+    container_name: adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      mysql_primary:
+        condition: service_healthy
+    networks:
+      - sipv_net
+
+# ==========================
+# Volúmenes de datos
+# ==========================
+volumes:
+  primary_data:
+  replica_data:
+  static_data:
+
+# ==========================
+# Red
+# ==========================
+networks:
+  sipv_net:
+    driver: bridge

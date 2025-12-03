@@ -1,0 +1,11 @@
+<!-- templates/inventario/partials/ajuste_success.html -->
+<script>
+  // Cierra modal y dispara recargas de tablas si las hay
+  document.getElementById('modal').classList.add('hidden');
+  // refrescar tablas si están en pantalla
+  const stockTable = document.querySelector('#stock-table');
+  if (stockTable) { htmx.trigger(stockTable, 'load'); }
+  const movsTable = document.querySelector('#movs-table');
+  if (movsTable) { htmx.trigger(movsTable, 'load'); }
+</script>
+

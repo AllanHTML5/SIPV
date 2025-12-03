@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}Factura {{ factura.numero }}{% endblock %}
+
+
+
+{% block content %}
+<h1 class="text-3xl font-bold mb-6">Factura #{{ factura.numero }}</h1>
+<div class="mt-6 flex gap-4">
+
+    <a href="{% url 'facturas:factura_pdf' factura.id %}"
+       class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg shadow">
+        📄 Descargar PDF
+    </a>
+
+    <a href="{% url 'facturas:factura_ticket' factura.id %}"
+       class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg shadow">
+        🎫 Ticket POS
+    </a>
+
+</div>
+
+<div class="bg-white p-5 rounded-xl shadow border mb-5">
+    <p><strong>Tipo:</strong> {{ factura.tipo }}</p>
+    <p><strong>Proveedor:</strong> {{ factura.proveedor }}</p>
+    <p><strong>Cliente:</strong> {{ factura.cliente }}</p>
+    <p><strong>Fecha:</strong> {{ factura.fecha|date:"d/m/Y H:i" }}</p>
+</div>
+
+<div class="bg-white p-5 rounded-xl shadow border">
+    <h2 class="text-xl font-semibold mb-4">Productos</h2>
+
+    <table class="w-full text-left">
+        <thead>
+            <tr class="border-b">
+                <th>Producto</th>
+                <th>Cantidad</th>
+                <th>Precio</th>
+                <th>Subtotal</th>
+                <th>Impuesto</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+
+        <tbody>
+        {% for l in lineas %}
+            <tr class="border-b">
+                <td>{{ l.producto }}</td>
+                <td>{{ l.cantidad }}</td>
+                <td>L {{ l.precio_unitario }}</td>
+                <td>L {{ l.subtotal }}</td>
+                <td>L {{ l.impuesto }}</td>
+                <td>L {{ l.total }}</td>
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="text-right text-xl mt-5">
+        <p>Subtotal: <strong>L {{ factura.subtotal }}</strong></p>
+        <p>Impuesto: <strong>L {{ factura.impuesto }}</strong></p>
+        <p class="text-3xl">TOTAL: <strong>L {{ factura.total }}</strong></p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Permisos{% endblock %}
+{% block content %}
+
+<h1 class="text-3xl font-bold text-slate-800 mb-6">🔐 Permisos</h1>
+
+<div class="mb-6">
+    <input type="text"
+           placeholder="Buscar permiso, app o modelo..."
+           hx-get="{% url 'authapp:permisos_buscar' %}"
+           hx-trigger="keyup changed delay:300ms"
+           hx-target="#tabla-permisos"
+           class="w-1/2 px-4 py-2 border rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500">
+</div>
+
+<div id="tabla-permisos">
+    {% include "authapp/permisos/_tabla.html" %}
+</div>
+
+{% endblock %}

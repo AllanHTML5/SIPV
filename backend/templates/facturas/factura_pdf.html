@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+    body { font-family: "Helvetica", sans-serif; font-size: 13px; padding: 25px; color: #333; }
+    .header { text-align: center; margin-bottom: 15px; }
+    .header img { width: 130px; margin-bottom: 5px; }
+
+    h1 { margin: 0; font-size: 22px; color: #222; }
+    .subheader { font-size: 14px; margin-top: 4px; color: #777; }
+
+    .info-box {
+        margin-top: 15px;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background: #fafafa;
+        font-size: 13px;
+    }
+    .info-box p { margin: 3px 0; }
+
+    .table {
+        width: 100%; border-collapse: collapse; margin-top: 20px;
+    }
+    .table th {
+        background: #f0f0f0; padding: 8px; border: 1px solid #ccc;
+        font-weight: bold; font-size: 13px;
+    }
+    .table td { padding: 8px; border: 1px solid #ddd; }
+    .right { text-align: right; }
+
+    .totales { margin-top: 20px; float: right; width: 300px; font-size: 15px; }
+    .totales div { display: flex; justify-content: space-between; padding: 4px 0; }
+    .totales div.total {
+        font-size: 18px; font-weight: bold;
+        border-top: 2px solid #000; margin-top: 8px; padding-top: 8px;
+    }
+
+    .footer { margin-top: 40px; font-size: 12px; text-align: center; color: #777; }
+</style>
+</head>
+
+<body>
+
+<div class="header">
+    <img src="/static/img/logo.png">
+    <h1>Factura {{ factura.numero }}</h1>
+    <div class="subheader">{{ factura.get_tipo_display }}</div>
+</div>
+
+<div class="info-box">
+    <p><strong>Fecha:</strong> {{ factura.fecha|date:"d/m/Y H:i" }}</p>
+
+    {% if factura.cliente %}
+    <p><strong>Cliente:</strong> {{ factura.cliente.nombre }}</p>
+    {% endif %}
+
+    {% if factura.proveedor %}
+    <p><strong>Proveedor:</strong> {{ factura.proveedor.nombre }}</p>
+    {% endif %}
+
+    <p><strong>Cajero:</strong> {{ factura.creado_por.username }}</p>
+
+    {% if factura.metodo_pago %}
+    <p><strong>Método de Pago:</strong> {{ factura.metodo_pago }}</p>
+    {% endif %}
+
+    {% if factura.referencia_pago %}
+    <p><strong>Referencia:</strong> {{ factura.referencia_pago }}</p>
+    {% endif %}
+
+    {% if factura.efectivo_recibido %}
+    <p><strong>Efectivo recibido:</strong> L {{ factura.efectivo_recibido }}</p>
+    <p><strong>Cambio entregado:</strong> L {{ factura.cambio_entregado }}</p>
+    {% endif %}
+
+    {% if factura.caja %}
+    <p><strong>Caja:</strong> {{ factura.caja.nombre }}</p>
+    {% endif %}
+
+    {% if factura.cai %}
+    <p><strong>CAI:</strong> {{ factura.cai }}</p>
+    <p><strong>Rango autorizado:</strong> {{ factura.rango_inicial }} — {{ factura.rango_final }}</p>
+    {% endif %}
+</div>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Producto</th>
+            <th class="right">Cantidad</th>
+            <th class="right">Precio</th>
+            <th class="right">Total</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for l in factura.detalles.all %}
+        <tr>
+            <td>{{ l.producto.nombre }}</td>
+            <td class="right">{{ l.cantidad }}</td>
+            <td class="right">L {{ l.precio_unitario }}</td>
+            <td class="right">L {{ l.total }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<div class="totales">
+    <div><span>Subtotal:</span> <span>L {{ factura.subtotal }}</span></div>
+    <div><span>Impuesto:</span> <span>L {{ factura.impuesto }}</span></div>
+    <div class="total"><span>Total:</span> <span>L {{ factura.total }}</span></div>
+</div>
+
+<div style="clear: both;"></div>
+
+<div class="footer">
+    Gracias por su compra.
+</div>
+
+</body>
+</html>

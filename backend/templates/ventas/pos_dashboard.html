@@ -1,0 +1,472 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Punto de Venta (POS){% endblock %}
+
+{% block content %}
+
+
+<style>
+.toaster-error {
+    background: #ffebeb !important;
+    border-color: #ffbebe !important;
+    color: #a30000 !important;
+}
+</style>
+
+<div x-data="{ show:false, msg:'', url:'', type:'success' }"
+     x-show="show"
+     @toast.window="
+        msg  = $event.detail.msg;
+        url  = $event.detail.url;
+        type = $event.detail.type ?? 'success';
+        show = true;
+        setTimeout(() => show = false, 4500);
+     "
+     x-transition:enter="transform transition-all duration-500 ease-out"
+     x-transition:enter-start="opacity-0 translate-y-10 scale-95"
+     x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+     x-transition:leave="transform duration-500 ease-in"
+     x-transition:leave-start="opacity-100 translate-y-0 scale-100"
+     x-transition:leave-end="opacity-0 translate-y-8 scale-95"
+     class="fixed bottom-6 right-6 
+            bg-white/70 backdrop-blur-xl 
+            px-6 py-4 
+            rounded-2xl shadow-2xl border border-white/50
+            flex items-center gap-4 
+            z-50"
+     :class="type === 'error' ? 'toaster-error' : ''">
+
+    <div class="flex flex-col">
+        <span x-text="msg" class="font-semibold text-sm"></span>
+    </div>
+
+    <template x-if="url">
+        <a :href="url"
+           class="px-4 py-1.5 rounded-xl bg-blue-600 text-white text-sm font-semibold
+                  shadow hover:bg-blue-700 transform hover:scale-[1.03] transition">
+           Ver Orden
+        </a>
+    </template>
+</div>
+
+
+
+
+<div x-data="POS()" class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+
+    <!-- PANEL IZQUIERDO -->
+    <div class="bg-white p-5 shadow rounded-xl border border-slate-200 lg:col-span-4">
+
+        <h2 class="text-xl font-semibold mb-3 flex items-center gap-2">
+            <i class="bi bi-search"></i> Buscar producto
+        </h2>
+
+        <div class="relative">
+            <input type="text"
+                placeholder="Buscar producto por nombre o código..."
+                class="w-full border rounded px-3 py-2"
+                x-model="query"
+                @input="debounceBuscar()"
+                @keydown.enter.prevent="buscarPorEnter">
+
+            <!-- RESULTADOS -->
+            <div class="absolute z-50 w-full bg-white border rounded shadow mt-1"
+                x-show="resultados.length > 0"
+                @click.away="resultados = []"
+                x-transition>
+
+                <template x-for="item in resultados" :key="item.id">
+                    <div class="px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                        @click="agregarLinea(item); resultados=[]; query=''">
+
+                        <div class="flex justify-between">
+                            <span x-text="item.nombre"></span>
+                            <span class="font-semibold">L <span x-text="item.precio.toFixed(2)"></span></span>
+                        </div>
+
+                        <div class="text-xs text-gray-500" x-text="'Código: ' + item.codigo"></div>
+                        <div class="text-xs text-emerald-600"
+                            x-text="'ISV: ' + (item.impuesto * 100).toFixed(0) + '%'"></div>
+                    </div>
+                </template>
+
+            </div>
+        </div>
+
+    </div>
+
+    <!-- PANEL CENTRAL -->
+    <div class="bg-white p-5 shadow rounded-xl border border-slate-200 lg:col-span-5">
+
+    <div class="space-y-3 max-h-[520px] overflow-y-auto">
+
+        <template x-if="lineas.length === 0">
+            <p class="text-slate-400 text-center py-10">Sin productos aún.</p>
+        </template>
+
+        <template x-for="(l, index) in lineas" :key="l.id">
+            <div class="p-3 border rounded-lg flex justify-between items-start gap-4">
+
+                <div class="flex-1">
+                    <div class="font-medium" x-text="l.nombre"></div>
+                    <div class="text-sm text-slate-500">
+                        L <span x-text="l.precio.toFixed(2)"></span> c/u
+                    </div>
+                    <div class="text-xs text-emerald-600">
+                        ISV: <span x-text="(l.impuesto * 100).toFixed(0)"></span>%
+                    </div>
+
+                    <div class="mt-2">
+                        <label class="text-xs text-slate-500">Descuento (%)</label>
+                        <input type="number" min="0" max="100"
+                            class="w-24 border rounded px-2 py-1 text-center"
+                            x-model="l.descuentoPct"
+                            @change="recalcular"
+                            placeholder="0">
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button class="px-2 bg-slate-200 rounded" @click="cambiarCantidad(index, -1)">-</button>
+
+                    <input type="number" min="1" class="w-14 text-center border rounded"
+                        x-model="l.cantidad" @change="recalcular">
+
+                    <button class="px-2 bg-slate-200 rounded" @click="cambiarCantidad(index, 1)">+</button>
+                </div>
+
+                <div class="font-semibold w-24 text-right">
+                    L <span x-text="(
+                        (l.precio*l.cantidad) -
+                        (l.descuentoPct/100*l.precio*l.cantidad) +
+                        ((l.precio*l.cantidad - l.descuentoPct/100*l.precio*l.cantidad)*l.impuesto)
+                    ).toFixed(2)"></span>
+                </div>
+
+                <button class="text-red-500" @click="eliminarLinea(index)">
+                    <i class="bi bi-trash3"></i>
+                </button>
+
+            </div>
+        </template>
+
+    </div>
+
+    </div>
+
+    <!-- TOTALES -->
+    <div class="bg-white p-5 shadow rounded-xl border border-slate-200 lg:col-span-3">
+
+        <h2 class="text-xl font-semibold mb-3 flex items-center gap-2">
+            <i class="bi bi-cash-stack"></i> Resumen
+        </h2>
+
+        <div class="space-y-2 text-lg">
+            <div class="flex justify-between">
+                <span>Subtotal:</span>
+                <span>L <span x-text="subtotal.toFixed(2)"></span></span>
+            </div>
+
+            <div class="flex justify-between">
+                <span>Descuento:</span>
+                <span>L <span x-text="descuento_total.toFixed(2)"></span></span>
+            </div>
+
+            <div class="flex justify-between">
+                <span>ISV:</span>
+                <span>L <span x-text="impuesto_total.toFixed(2)"></span></span>
+            </div>
+
+            <div class="border-t pt-2 flex justify-between font-bold text-xl mt-4">
+                <span>Total:</span>
+                <span>L <span x-text="total.toFixed(2)"></span></span>
+            </div>
+        </div>
+
+        <button @click="finalizarVenta"
+            class="w-full py-3 mt-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-lg font-semibold">
+            <i class="bi bi-plus-circle"></i> Crear Orden
+        </button>
+
+    </div>
+</div>
+
+
+
+
+<h2 class="text-xl font-semibold mt-10 mb-3 flex items-center gap-2">
+    <i class="bi bi-clock-history"></i> Órdenes recientes
+</h2>
+
+<div class="bg-white rounded-xl border shadow p-4"
+     x-data="recientesComponent()"
+     x-init="init()">
+
+    <!-- TIMER -->
+    <div class="text-xs text-slate-500 mb-2" x-text="'Actualizado hace ' + tiempo + 's'"></div>
+
+    <div class="max-h-[300px] overflow-y-auto">
+        <table class="w-full text-sm table-fixed">
+            <thead class="border-b text-slate-600 sticky top-0 bg-white">
+                <tr>
+                    <th class="py-2 w-24 text-left">#</th>
+                    <th class="py-2 w-40 text-left">Fecha</th>
+                    <th class="py-2 w-32 text-right">Total</th>
+                    <th class="py-2 w-48 text-right">Creado por</th>
+                    <th class="py-2 w-32 text-center">Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody>
+
+                <!-- SKELETON LOADING -->
+                <template x-if="loading">
+                    <template x-for="i in 5" :key="i">
+                        <tr class="animate-pulse">
+                            <td class="py-2"><div class="h-4 bg-slate-200 rounded w-10"></div></td>
+                            <td class="py-2"><div class="h-4 bg-slate-200 rounded w-28"></div></td>
+                            <td class="py-2 text-right"><div class="h-4 bg-slate-200 rounded w-16 ml-auto"></div></td>
+                            <td class="py-2 text-right"><div class="h-4 bg-slate-200 rounded w-24 ml-auto"></div></td>
+                            <td class="py-2 text-center"><div class="h-4 bg-slate-200 rounded w-12 mx-auto"></div></td>
+                        </tr>
+                    </template>
+                </template>
+
+                <!-- DATOS REALES -->
+                <template x-if="!loading">
+                    <template x-for="v in recientes" :key="v.id">
+                        <tr class="border-b hover:bg-slate-50 transition-all"
+                            :class="animar ? 'bg-yellow-50' : ''">
+
+                            <td class="py-2" x-text="v.numero"></td>
+                            <td class="py-2" x-text="v.fecha"></td>
+                            <td class="py-2 text-right font-semibold">L <span x-text="v.total"></span></td>
+                            <td class="py-2 text-right" x-text="v.usuario"></td>
+
+                            <td class="py-2 text-center">
+                                <a :href="`/ventas/detalle/${v.id}/`"
+                                   class="px-3 py-1 rounded-lg text-white bg-blue-600 hover:bg-blue-700 text-xs shadow">
+                                    Ver detalle
+                                </a>
+                            </td>
+
+                        </tr>
+                    </template>
+                </template>
+
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+{{ block.super }}
+
+<script>
+
+function recientesComponent() {
+    return {
+        recientes: [],
+        loading: true,
+        tiempo: 0,
+        animar: false,
+
+        init() {
+            this.cargar();
+            setInterval(() => this.tiempo++, 1000);
+            setInterval(() => this.cargar(), 5000);
+        },
+
+        async cargar() {
+            this.loading = true;
+            this.animar = true;
+            this.tiempo = 0;
+
+            let r = await fetch("/ventas/api/recientes/");
+            let data = await r.json();
+
+            this.loading = false;
+
+            // Ordenar por fecha descendente
+            this.recientes = data.recientes.sort(
+                (a, b) => new Date(b.fecha) - new Date(a.fecha)
+            );
+
+            // Quitar animación después de 1s
+            setTimeout(() => this.animar = false, 1000);
+        }
+    }
+}
+
+
+
+document.addEventListener("alpine:init", () => {
+    Alpine.data("POS", () => ({
+
+        query: "",
+        resultados: [],
+        lineas: [],
+        subtotal: 0,
+        descuento_total: 0,
+        impuesto_total: 0,
+        total: 0,
+
+        timer: null,
+
+        debounceBuscar() {
+            clearTimeout(this.timer);
+            this.timer = setTimeout(() => this.buscarProductos(), 250);
+        },
+
+        async buscarProductos() {
+            if (this.query.length < 2) {
+                this.resultados = [];
+                return;
+            }
+
+            let res = await fetch(`/ventas/api/buscar-productos/?q=${this.query}`);
+            let data = await res.json();
+            this.resultados = data.results || [];
+        },
+
+        async buscarPorEnter() {
+            if (!this.query) return;
+
+            let res = await fetch(`/ventas/api/buscar-productos/?q=${this.query}`);
+            let data = await res.json();
+
+            if (!data.results || data.results.length === 0) return;
+
+            if (data.results.length === 1) {
+                this.agregarLinea(data.results[0]);
+                this.query = "";
+                this.resultados = [];
+                return;
+            }
+
+            this.resultados = data.results;
+        },
+
+        agregarLinea(p) {
+            let l = this.lineas.find(x => x.id === p.id);
+
+            if (l) l.cantidad++;
+            else {
+                this.lineas.push({
+                    id: p.id,
+                    nombre: p.nombre,
+                    precio: p.precio,
+                    codigo: p.codigo,
+                    impuesto: p.impuesto,
+                    cantidad: 1,
+                    descuentoPct: 0,
+                });
+            }
+
+            this.recalcular();
+        },
+
+        eliminarLinea(idx) {
+            this.lineas.splice(idx, 1);
+            this.recalcular();
+        },
+
+        cambiarCantidad(idx, delta) {
+            this.lineas[idx].cantidad += delta;
+            if (this.lineas[idx].cantidad < 1) this.lineas[idx].cantidad = 1;
+            this.recalcular();
+        },
+
+        recalcular() {
+            let subtotal = 0;
+            let descuento_total = 0;
+
+            this.lineas.forEach(l => {
+                let bruto = l.precio * l.cantidad;
+                subtotal += bruto;
+
+                let desc = bruto * (l.descuentoPct / 100);
+                descuento_total += desc;
+            });
+
+            let base = subtotal - descuento_total;
+            let impuesto_total = base * 0.15;
+
+            this.subtotal = subtotal;
+            this.descuento_total = descuento_total;
+            this.impuesto_total = impuesto_total;
+            this.total = base + impuesto_total;
+        },
+
+async finalizarVenta() {
+
+    if (this.lineas.length === 0) {
+        window.dispatchEvent(new CustomEvent("toast", {
+            detail: {
+                msg: "No hay productos en la orden.",
+                url: "",
+                type: "error"
+            }
+        }));
+        return;
+    }
+
+    let payload = {
+        lineas: this.lineas.map(l => ({
+            id: l.id,
+            cantidad: l.cantidad,
+            impuesto: l.impuesto
+        })),
+    };
+
+    let res = await fetch("/ventas/api/finalizar/", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json",
+            "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify(payload)
+    });
+
+    let data = await res.json();
+
+    // ERROR 
+    if (!data.ok) {
+        window.dispatchEvent(new CustomEvent("toast", {
+            detail: {
+                msg: "❌ " + data.error,
+                url: "",
+                type: "error"
+            }
+        }));
+        return;
+    }
+
+    // ÉXITO
+    window.dispatchEvent(new CustomEvent("toast", {
+        detail: {
+            msg: "Orden #" + data.venta_num + " creada",
+            url: `/ventas/detalle/${data.venta_id}/`,
+            type: "success"
+        }
+    }));
+
+    // Reset POS
+    this.lineas = [];
+    this.query = "";
+    this.resultados = [];
+    this.subtotal = 0;
+    this.impuesto_total = 0;
+    this.total = 0;
+}
+
+
+    }));
+});
+</script>
+
+{% endblock %}

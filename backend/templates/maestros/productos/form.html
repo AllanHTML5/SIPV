@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block content %}
+
+<script>
+function previewImage(event) {
+    const imgTag = document.getElementById('preview-img');
+    const file = event.target.files[0];
+
+    if (file) {
+        imgTag.src = URL.createObjectURL(file);
+        imgTag.classList.remove("hidden");
+    }
+}
+</script>
+
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-slate-800">
+        {% if modo == 'crear' %}
+            ➕ Crear Producto
+        {% else %}
+            ✏️ Editar Producto
+        {% endif %}
+    </h1>
+
+    <a href="{% url 'maestros:productos_lista' %}"
+       class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-5 py-2 rounded-lg shadow font-medium">
+        ⬅ Volver
+    </a>
+</div>
+
+<div class="bg-white p-8 rounded-2xl shadow-xl border max-w-4xl">
+
+<form method="POST" enctype="multipart/form-data" class="space-y-6" novalidate>
+    {% csrf_token %}
+
+    <div>
+        <label class="block font-semibold text-slate-700 mb-2">Imagen del Producto</label>
+
+        <div class="flex items-center gap-6">
+
+            <img id="preview-img"
+                 src="{% if producto and producto.imagen %}{{ producto.imagen.url }}{% endif %}"
+                 class="h-28 w-28 rounded-xl object-cover shadow 
+                        {% if not producto or not producto.imagen %}hidden{% endif %}"
+            >
+
+            <div class="flex-1">
+                {{ form.imagen }}
+
+                {% for e in form.imagen.errors %}
+                    <p class="text-red-600 text-sm mt-1">{{ e }}</p>
+                {% endfor %}
+
+                <p class="text-slate-500 text-xs mt-1">
+                    JPG o PNG — máximo 500 KB
+                </p>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <label class="font-semibold text-slate-700 mb-1 block">Nombre</label>
+            {{ form.nombre }}
+            {% for e in form.nombre.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ e }}</p>
+            {% endfor %}
+        </div>
+
+        <div>
+            <label class="font-semibold text-slate-700 mb-1 block">Código de barras</label>
+            {{ form.codigo_barras }}
+            {% for e in form.codigo_barras.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ e }}</p>
+            {% endfor %}
+        </div>
+    </div>
+
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <label class="font-semibold text-slate-700 mb-1 block">Proveedor</label>
+            <div class="relative">
+                {{ form.proveedor }}
+                <span class="absolute right-3 top-3 text-slate-400">▾</span>
+            </div>
+        </div>
+
+        <div>
+            <label class="font-semibold text-slate-700 mb-1 block">Categoría</label>
+            <div class="relative">
+                {{ form.categoria }}
+                <span class="absolute right-3 top-3 text-slate-400">▾</span>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+            <label class="font-semibold text-slate-700 mb-1 block">Precio de venta</label>
+            {{ form.precio_venta }}
+            {% for e in form.precio_venta.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ e }}</p>
+            {% endfor %}
+        </div>
+
+        <div>
+            <label class="font-semibold text-slate-700 mb-1 block">Costo promedio</label>
+            {{ form.costo_promedio }}
+            {% for e in form.costo_promedio.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ e }}</p>
+            {% endfor %}
+        </div>
+
+        <div>
+            <label class="font-semibold text-slate-700 mb-1 block">Stock mínimo</label>
+            {{ form.stock_minimo }}
+            {% for e in form.stock_minimo.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ e }}</p>
+            {% endfor %}
+        </div>
+    </div>
+
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <label class="font-semibold text-slate-700 mb-1 block">Impuesto (%)</label>
+            {{ form.impuesto }}
+            {% for e in form.impuesto.errors %}
+                <p class="text-red-600 text-sm mt-1">{{ e }}</p>
+            {% endfor %}
+        </div>
+
+        <div class="flex items-center mt-6 gap-2">
+            {{ form.activo }}
+            <label class="font-semibold text-slate-700">Activo</label>
+        </div>
+    </div>
+
+    <div class="flex justify-end mt-6">
+        <button class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl shadow-md font-medium">
+            {% if modo == 'crear' %}
+                💾 Guardar Producto
+            {% else %}
+                🔄 Actualizar Producto
+            {% endif %}
+        </button>
+    </div>
+
+</form>
+
+</div>
+
+
+<script>
+document.querySelector("input[type='file']")
+    ?.addEventListener("change", previewImage);
+</script>
+
+{% endblock %}

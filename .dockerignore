@@ -1,0 +1,10 @@
+cd /home/allandev/sipv && cat > .dockerignore <<'EOF'
+.venv/
+__pycache__/
+*.pyc
+.git/
+.gitignore
+.env
+media/
+staticfiles/
+EOF

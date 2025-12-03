@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block content %}
+
+<h1 class="text-3xl font-bold text-slate-800 mb-6">Eliminar Proveedor</h1>
+
+<div class="bg-white p-6 shadow rounded-xl border border-slate-200 max-w-xl">
+    <p class="text-slate-700 mb-6">
+        ¿Deseas eliminar el proveedor:
+        <strong class="text-red-600">{{ objeto.nombre }}</strong>?
+    </p>
+
+    <form method="POST">
+        {% csrf_token %}
+        <div class="flex gap-3">
+            <button type="submit"
+                class="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-lg shadow">
+                Sí, eliminar
+            </button>
+
+            <a href="{% url volver_url %}"
+               class="px-5 py-3 rounded-lg bg-slate-200 hover:bg-slate-300 text-slate-700 shadow">
+                Cancelar
+            </a>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

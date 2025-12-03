@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}Inventario — Movimientos{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold text-slate-800 mb-6">Movimientos de Inventario</h1>
+
+<div class="bg-white rounded-xl shadow p-6">
+
+  <!-- FORMULARIO DE FILTROS -->
+  <form id="movs-filters"
+        class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6"
+        onsubmit="return false;">
+    <input type="hidden"
+           name="producto"
+           id="producto-id"
+           hx-get="{% url 'inventario:movimientos_partial' %}"
+           hx-target="#movs-table"
+           hx-trigger="change"
+           hx-include="#movs-filters">
+
+    <!-- Buscar -->
+    <div class="md:col-span-2">
+      <label class="text-sm text-slate-600 font-medium">Buscar</label>
+      <input type="text" name="q"
+             placeholder="Producto, motivo o referencia..."
+             class="border rounded-lg px-3 py-2 w-full"
+             hx-get="{% url 'inventario:movimientos_partial' %}"
+             hx-target="#movs-table"
+             hx-trigger="keyup changed delay:300ms"
+             hx-include="#movs-filters">
+    </div>
+
+    <!-- Autocomplete de producto -->
+    <div class="relative">
+      <label class="text-sm text-slate-600 font-medium">Producto</label>
+
+      <input type="text"
+             id="producto-search"
+             name="producto_search"
+             placeholder="Buscar producto..."
+             class="border rounded-lg px-3 py-2 w-full"
+             autocomplete="off"
+             hx-get="{% url 'inventario:producto_autocomplete' %}"
+             hx-target="#autocomplete-producto"
+             hx-trigger="keyup changed delay:300ms"
+             hx-include="#movs-filters">
+
+      <div id="autocomplete-producto"
+           class="absolute bg-white shadow-lg rounded border w-full hidden z-20"></div>
+    </div>
+
+    <!-- Proveedor -->
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Proveedor</label>
+      <select name="proveedor"
+              class="border rounded-lg px-3 py-2 w-full"
+              hx-get="{% url 'inventario:movimientos_partial' %}"
+              hx-target="#movs-table"
+              hx-trigger="change"
+              hx-include="#movs-filters">
+        <option value="">Todos</option>
+        {% for pv in proveedores %}
+        <option value="{{ pv.id }}">{{ pv.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Tipo de movimiento -->
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Tipo</label>
+      <select name="tipo"
+              class="border rounded-lg px-3 py-2 w-full"
+              hx-get="{% url 'inventario:movimientos_partial' %}"
+              hx-target="#movs-table"
+              hx-trigger="change"
+              hx-include="#movs-filters">
+        <option value="">Todos</option>
+        <option value="ENTRADA">Entrada</option>
+        <option value="SALIDA">Salida</option>
+        <option value="AJUSTE_POS">Ajuste +</option>
+        <option value="AJUSTE_NEG">Ajuste -</option>
+      </select>
+    </div>
+
+    <!-- Fechas -->
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Desde</label>
+      <input type="date" name="fecha_desde"
+             class="border rounded-lg px-3 py-2 w-full"
+             hx-get="{% url 'inventario:movimientos_partial' %}"
+             hx-trigger="change"
+             hx-target="#movs-table"
+             hx-include="#movs-filters">
+    </div>
+
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Hasta</label>
+      <input type="date" name="fecha_hasta"
+             class="border rounded-lg px-3 py-2 w-full"
+             hx-get="{% url 'inventario:movimientos_partial' %}"
+             hx-trigger="change"
+             hx-target="#movs-table"
+             hx-include="#movs-filters">
+    </div>
+
+  </form>
+
+  <!-- TABLA -->
+  <div id="movs-table"
+       hx-get="{% url 'inventario:movimientos_partial' %}"
+       hx-trigger="load"
+       hx-include="#movs-filters"
+       class="overflow-x-auto">
+    <div class="py-6 text-slate-500">Cargando…</div>
+  </div>
+
+</div>
+
+<script>
+function seleccionarProducto(id, nombre) {
+  document.getElementById("producto-search").value = nombre;
+  document.getElementById("producto-id").value = id;
+
+  // ocultar dropdown
+  const box = document.getElementById("autocomplete-producto");
+  box.classList.add("hidden");
+
+  htmx.trigger("#producto-id", "change");
+}
+</script>
+
+{% endblock %}

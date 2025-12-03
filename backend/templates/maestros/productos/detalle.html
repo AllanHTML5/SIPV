@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- HEADER -->
+<div class="flex justify-between items-center mb-8">
+
+    <!-- TITULO -->
+    <h1 class="text-3xl font-extrabold text-slate-800 tracking-tight">
+        📦 Detalle del Producto
+    </h1>
+
+    <!-- ACCIONES -->
+    <div class="flex gap-3">
+
+        <!-- EDITAR -->
+        <a href="{% url 'maestros:productos_editar' producto.id %}"
+           class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700
+                  text-white px-5 py-3 rounded-lg shadow transition">
+            ✏ Editar
+        </a>
+
+        <!-- ELIMINAR -->
+        <a href="{% url 'maestros:productos_eliminar' producto.id %}"
+           class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700
+                  text-white px-5 py-3 rounded-lg shadow transition">
+            🗑 Eliminar
+        </a>
+
+        <!-- VOLVER -->
+        <a href="{% url 'maestros:productos_lista' %}"
+           class="inline-flex items-center gap-2 bg-slate-200 hover:bg-slate-300
+                  text-slate-700 px-5 py-3 rounded-lg shadow transition">
+            ⬅ Volver
+        </a>
+
+    </div>
+</div>
+
+<!-- CARD PRINCIPAL -->
+<div class="bg-white p-8 rounded-2xl shadow-xl border border-slate-200">
+
+    <!-- TOP SECTION -->
+    <div class="flex flex-col md:flex-row gap-8">
+
+        <!-- IMAGEN -->
+        <div>
+            {% if producto.imagen %}
+                <img src="{{ producto.imagen.url }}"
+                     class="w-48 h-48 rounded-xl object-cover shadow-lg border border-slate-200">
+            {% else %}
+                <div class="w-48 h-48 rounded-xl bg-slate-100 flex items-center justify-center border border-slate-300">
+                    <span class="text-slate-500 text-sm">Sin imagen</span>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- INFO PRINCIPAL -->
+        <div class="flex-1 space-y-2">
+
+            <h2 class="text-2xl font-bold text-slate-900">
+                {{ producto.nombre }}
+            </h2>
+
+            {% if producto.activo %}
+            <span class="inline-block px-3 py-1 text-sm bg-emerald-100 text-emerald-800 
+                         rounded-full border border-emerald-300">
+                Activo
+            </span>
+            {% else %}
+            <span class="inline-block px-3 py-1 text-sm bg-red-100 text-red-800 
+                         rounded-full border border-red-300">
+                Inactivo
+            </span>
+            {% endif %}
+
+            <p class="text-sm text-slate-500">ID interno: {{ producto.id }}</p>
+
+            <div class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <p class="text-xs text-slate-500">Código de Barras</p>
+                    <p class="font-semibold">{{ producto.codigo_barras|default:"—" }}</p>
+                </div>
+
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <p class="text-xs text-slate-500">Categoría</p>
+                    <p class="font-semibold">{{ producto.categoria|default:"—" }}</p>
+                </div>
+
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <p class="text-xs text-slate-500">Proveedor</p>
+                    <p class="font-semibold">{{ producto.proveedor|default:"—" }}</p>
+                </div>
+
+                <div class="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <p class="text-xs text-slate-500">Impuesto</p>
+                    <p class="font-semibold">{{ producto.impuesto|floatformat:2 }}</p>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+
+    <!-- LINEA -->
+    <div class="my-8 border-t border-slate-200"></div>
+
+    <!-- PRECIOS -->
+    <h3 class="text-xl font-bold text-slate-800 mb-4">💰 Precios</h3>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+        <div class="bg-blue-50 border border-blue-200 p-5 rounded-xl shadow-sm">
+            <p class="text-sm text-blue-700">Precio de Venta</p>
+            <p class="text-2xl font-extrabold text-blue-900">
+                L {{ producto.precio_venta }}
+            </p>
+        </div>
+
+        <div class="bg-amber-50 border border-amber-200 p-5 rounded-xl shadow-sm">
+            <p class="text-sm text-amber-700">Costo Promedio</p>
+            <p class="text-2xl font-extrabold text-amber-900">
+                L {{ producto.costo_promedio }}
+            </p>
+        </div>
+
+        <div class="bg-purple-50 border border-purple-200 p-5 rounded-xl shadow-sm">
+            <p class="text-sm text-purple-700">Stock Mínimo</p>
+            <p class="text-2xl font-extrabold text-purple-900">
+                {{ producto.stock_minimo }}
+            </p>
+        </div>
+
+    </div>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% block title %}Inventario — Stock{% endblock %}
+
+{% block content %}
+
+<h1 class="text-2xl font-bold text-slate-800 mb-6">Inventario — Stock</h1>
+
+<div class="bg-white rounded-xl shadow p-6">
+
+  <!-- FILTROS -->
+  <form id="stock-filters"
+        class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6"
+        onsubmit="return false;">
+
+<!-- BOTONES EXPORTAR -->
+<div class="flex gap-3 mb-4">
+  <a class="px-3 py-2 border rounded bg-slate-50 hover:bg-slate-100"
+     href="{% url 'inventario:stock_list' %}?{{ request.GET.urlencode }}&export=csv">
+    Exportar CSV
+  </a>
+
+  <a class="px-3 py-2 border rounded bg-slate-50 hover:bg-slate-100"
+     href="{% url 'inventario:stock_list' %}?{{ request.GET.urlencode }}&export=pdf">
+    Exportar PDF
+  </a>
+</div>
+
+
+    <!-- Buscar -->
+    <div class="md:col-span-2">
+      <label class="text-sm text-slate-600 font-medium">Buscar producto</label>
+      <input type="text" name="q" value="{{ q }}"
+             placeholder="Nombre o código de barras..."
+             class="border rounded-lg px-3 py-2 w-full"
+             hx-get="{% url 'inventario:stock_table_partial' %}"
+             hx-target="#stock-table"
+             hx-trigger="keyup changed delay:300ms"
+             hx-include="#stock-filters" />
+    </div>
+
+    <!-- Proveedor -->
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Proveedor</label>
+      <select name="proveedor"
+              class="border rounded-lg px-3 py-2 w-full"
+              hx-get="{% url 'inventario:stock_table_partial' %}"
+              hx-target="#stock-table"
+              hx-trigger="change"
+              hx-include="#stock-filters">
+        <option value="">Todos</option>
+        {% for p in proveedores %}
+        <option value="{{ p.id }}">{{ p.nombre }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Orden -->
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Ordenar por</label>
+      <select
+        name="ordering"
+        class="border rounded-lg px-3 py-2 w-full"
+        hx-get="{% url 'inventario:stock_table_partial' %}"
+        hx-target="#stock-table"
+        hx-trigger="change"
+        hx-include="#stock-filters">
+        <option value="nombre">Nombre</option>
+        <option value="precio_venta">Precio ↑</option>
+        <option value="-precio_venta">Precio ↓</option>
+        <option value="existencia__cantidad">Stock ↑</option>
+        <option value="-existencia__cantidad">Stock ↓</option>
+      </select>
+    </div>
+
+    <!-- Precio min -->
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Precio mínimo</label>
+      <input type="number" step="0.01" name="precio_min"
+             class="border rounded-lg px-3 py-2 w-full"
+             hx-trigger="change"
+             hx-get="{% url 'inventario:stock_table_partial' %}"
+             hx-target="#stock-table"
+             hx-include="#stock-filters">
+    </div>
+
+    <!-- Precio max -->
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Precio máximo</label>
+      <input type="number" step="0.01" name="precio_max"
+             class="border rounded-lg px-3 py-2 w-full"
+             hx-trigger="change"
+             hx-get="{% url 'inventario:stock_table_partial' %}"
+             hx-target="#stock-table"
+             hx-include="#stock-filters">
+    </div>
+
+    <!-- Stock min -->
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Stock mínimo</label>
+      <input type="number" step="1" name="stock_min"
+             class="border rounded-lg px-3 py-2 w-full"
+             hx-trigger="change"
+             hx-get="{% url 'inventario:stock_table_partial' %}"
+             hx-target="#stock-table"
+             hx-include="#stock-filters">
+    </div>
+
+    <!-- Stock max -->
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Stock máximo</label>
+      <input type="number" step="1" name="stock_max"
+             class="border rounded-lg px-3 py-2 w-full"
+             hx-trigger="change"
+             hx-get="{% url 'inventario:stock_table_partial' %}"
+             hx-target="#stock-table"
+             hx-include="#stock-filters">
+    </div>
+
+    <!-- Fecha desde -->
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Agregado desde</label>
+      <input type="date" name="fecha_desde"
+             class="border rounded-lg px-3 py-2 w-full"
+             hx-trigger="change"
+             hx-get="{% url 'inventario:stock_table_partial' %}"
+             hx-target="#stock-table"
+             hx-include="#stock-filters">
+    </div>
+
+    <!-- Fecha hasta -->
+    <div>
+      <label class="text-sm text-slate-600 font-medium">Agregado hasta</label>
+      <input type="date" name="fecha_hasta"
+             class="border rounded-lg px-3 py-2 w-full"
+             hx-trigger="change"
+             hx-get="{% url 'inventario:stock_table_partial' %}"
+             hx-target="#stock-table"
+             hx-include="#stock-filters">
+    </div>
+
+    <!-- Botón ajuste -->
+    <div class="md:col-span-4 flex justify-end">
+      <button type="button"
+              class="px-4 py-2 rounded bg-slate-900 text-white"
+              hx-get="{% url 'inventario:ajuste_modal' %}"
+              hx-target="#modal">
+        + Nuevo ajuste
+      </button>
+    </div>
+
+  </form>
+
+  <!-- Tabla -->
+  <div id="stock-table"
+       hx-get="{% url 'inventario:stock_table_partial' %}"
+       hx-trigger="load"
+       hx-include="#stock-filters"
+       class="overflow-x-auto">
+    <div class="py-6 text-slate-500">Cargando…</div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div id="modal" class="fixed inset-0 hidden bg-black/30 items-center justify-center"></div>
+
+{% endblock %}

@@ -1,0 +1,53 @@
+<div class="mx-auto max-w-lg">
+  <div class="bg-white rounded-xl shadow">
+    <div class="px-4 py-3 border-b flex items-center justify-between">
+      <h3 class="font-semibold">Nuevo ajuste de inventario</h3>
+      <button class="px-2 py-1 rounded border"
+              onclick="document.getElementById('modal').classList.add('hidden')">✕</button>
+    </div>
+
+    <form method="post"
+          hx-post="{% url 'inventario:ajuste_modal' %}"
+          hx-target="#modal"
+          hx-swap="outerHTML">
+      {% csrf_token %}
+
+      <div class="p-4 space-y-4">
+        <div>
+          <label class="block text-sm mb-1">Producto</label>
+          {{ form.producto }}
+          {% if form.producto.errors %}<p class="text-red-600 text-sm">{{ form.producto.errors|striptags }}</p>{% endif %}
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Tipo de ajuste</label>
+          {{ form.tipo }}
+          <p class="text-xs text-slate-500 mt-1">Ajuste positivo suma stock; negativo descuenta.</p>
+          {% if form.tipo.errors %}<p class="text-red-600 text-sm">{{ form.tipo.errors|striptags }}</p>{% endif %}
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Cantidad</label>
+          {{ form.cantidad }}
+          {% if form.cantidad.errors %}<p class="text-red-600 text-sm">{{ form.cantidad.errors|striptags }}</p>{% endif %}
+        </div>
+
+        <div>
+          <label class="block text-sm mb-1">Motivo</label>
+          {{ form.motivo }}
+          {% if form.motivo.errors %}<p class="text-red-600 text-sm">{{ form.motivo.errors|striptags }}</p>{% endif %}
+        </div>
+
+        {% if form.non_field_errors %}
+          <div class="text-red-600 text-sm">{{ form.non_field_errors }}</div>
+        {% endif %}
+      </div>
+
+      <div class="px-4 py-3 border-t flex gap-2 justify-end">
+        <button type="button" class="px-3 py-2 rounded border"
+                onclick="document.getElementById('modal').classList.add('hidden')">Cancelar</button>
+        <button type="submit" class="px-3 py-2 rounded bg-slate-900 text-white">Guardar</button>
+      </div>
+    </form>
+  </div>
+</div>

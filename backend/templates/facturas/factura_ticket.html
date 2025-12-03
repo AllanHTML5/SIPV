@@ -1,0 +1,72 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+
+<title>Ticket {{ factura.numero }}</title>
+
+<style>
+    body {
+        font-family: "Courier New", monospace;
+        width: 80mm;
+        margin: 0 auto;
+        font-size: 12px;
+    }
+    .center { text-align: center; }
+    .bold { font-weight: bold; }
+    .line { border-top: 1px dashed #000; margin: 8px 0; }
+    table { width: 100%; font-size: 11px; }
+    td { padding: 2px 0; }
+    @media print {
+        .no-print { display: none; }
+    }
+</style>
+
+</head>
+<body>
+
+<div class="center">
+    <img src="{% static 'img/logo.png' %}" style="height:40px;">
+    <div class="bold">SIPV - POS</div>
+    <div>Ticket #{{ factura.numero }}</div>
+    <div>{{ factura.fecha|date:"d/m/Y H:i" }}</div>
+</div>
+
+<div class="line"></div>
+
+<table>
+    {% for d in factura.detalles.all %}
+    <tr>
+        <td colspan="2" class="bold">{{ d.producto.nombre }}</td>
+    </tr>
+    <tr>
+        <td>{{ d.cantidad }} x L {{ d.precio_unitario }}</td>
+        <td style="text-align:right;">L {{ d.total }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<div class="line"></div>
+
+<table>
+    <tr><td>Subtotal:</td><td style="text-align:right;">L {{ factura.subtotal }}</td></tr>
+    <tr><td>Impuesto:</td><td style="text-align:right;">L {{ factura.impuesto }}</td></tr>
+    <tr class="bold"><td>Total:</td><td style="text-align:right;">L {{ factura.total }}</td></tr>
+</table>
+
+<div class="line"></div>
+
+<div class="center">
+    ¡Gracias por su compra!
+</div>
+
+<div class="no-print center" style="margin-top: 15px;">
+    <a href="#" onclick="window.print()" 
+       style="background:black; color:white; padding:8px 12px; border-radius:5px; text-decoration:none;">
+        🖨 Imprimir Ticket
+    </a>
+</div>
+
+</body>
+</html>

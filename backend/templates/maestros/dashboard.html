@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Maestros — Dashboard{% endblock %}
+
+{% block content %}
+
+<h1 class="text-3xl font-bold text-slate-800 mb-6">Dashboard de Maestros</h1>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+    <!-- Productos -->
+    <a href="{% url 'maestros:productos_lista' %}"
+       class="bg-white shadow-xl rounded-xl p-6 border border-slate-200 hover:shadow-2xl transition block">
+        <div class="text-4xl mb-3">📦</div>
+        <h2 class="text-xl font-bold text-slate-800">Productos</h2>
+        <p class="text-slate-600 text-sm">Total registrados</p>
+        <p class="text-3xl font-extrabold text-blue-600 mt-2">{{ total_productos }}</p>
+    </a>
+
+    <!-- Proveedores -->
+    <a href="{% url 'maestros:proveedores_lista' %}"
+       class="bg-white shadow-xl rounded-xl p-6 border border-slate-200 hover:shadow-2xl transition block">
+        <div class="text-4xl mb-3">🏢</div>
+        <h2 class="text-xl font-bold text-slate-800">Proveedores</h2>
+        <p class="text-slate-600 text-sm">Total activos</p>
+        <p class="text-3xl font-extrabold text-blue-600 mt-2">{{ total_proveedores }}</p>
+    </a>
+
+    <!-- Categorías -->
+    <a href="{% url 'maestros:categorias_lista' %}"
+       class="bg-white shadow-xl rounded-xl p-6 border border-slate-200 hover:shadow-2xl transition block">
+        <div class="text-4xl mb-3">🗂️</div>
+        <h2 class="text-xl font-bold text-slate-800">Categorías</h2>
+        <p class="text-slate-600 text-sm">Total definidas</p>
+        <p class="text-3xl font-extrabold text-blue-600 mt-2">{{ total_categorias }}</p>
+    </a>
+<!-- Clientes -->
+<a href="{% url 'maestros:clientes_lista' %}"
+   class="bg-white shadow-xl rounded-xl p-6 border border-slate-200 hover:shadow-2xl transition block">
+    <div class="text-4xl mb-3">👤</div>
+    <h2 class="text-xl font-bold text-slate-800">Clientes</h2>
+    <p class="text-slate-600 text-sm">Total registrados</p>
+    <p class="text-3xl font-extrabold text-blue-600 mt-2">{{ total_clientes }}</p>
+</a>
+
+
+</div>
+
+
+
+{% endblock %}

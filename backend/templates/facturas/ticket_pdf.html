@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<style>
+    body { font-family: monospace; font-size: 12px; width: 280px; }
+    .center { text-align: center; }
+    .bold { font-weight: bold; }
+    img { width: 120px; margin-bottom: 10px; }
+    .line { border-top: 1px dashed #000; margin: 6px 0; }
+    .total { font-size: 15px; font-weight: bold; }
+</style>
+</head>
+
+<body>
+
+<div class="center">
+    <img src="/static/img/logo.png">
+    <div class="bold">FACTURA {{ factura.numero }}</div>
+    <div>{{ factura.fecha|date:"d/m/Y H:i" }}</div>
+</div>
+
+<div class="line"></div>
+
+{% if factura.cliente %}
+<p><strong>Cliente:</strong> {{ factura.cliente.nombre }}</p>
+{% endif %}
+
+<p><strong>Cajero:</strong> {{ factura.creado_por.username }}</p>
+<p><strong>Método:</strong> {{ factura.metodo_pago }}</p>
+
+{% if factura.referencia_pago %}
+<p><strong>Ref:</strong> {{ factura.referencia_pago }}</p>
+{% endif %}
+
+{% if factura.efectivo_recibido %}
+<p><strong>Efectivo:</strong> L {{ factura.efectivo_recibido }}</p>
+<p><strong>Cambio:</strong> L {{ factura.cambio_entregado }}</p>
+{% endif %}
+
+<div class="line"></div>
+
+{% for l in factura.detalles.all %}
+<p>{{ l.producto.nombre }}
+<br> {{ l.cantidad }} x L {{ l.precio_unitario }}  
+<span style="float:right">L {{ l.total }}</span></p>
+{% endfor %}
+
+<div class="line"></div>
+
+<p>Subtotal: <span style="float:right">L {{ factura.subtotal }}</span></p>
+<p>Impuesto: <span style="float:right">L {{ factura.impuesto }}</span></p>
+
+<p class="total">TOTAL:  
+<span style="float:right">L {{ factura.total }}</span></p>
+
+<div class="line"></div>
+
+<div class="center">Gracias por su compra</div>
+
+</body>
+</html>

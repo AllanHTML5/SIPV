@@ -1,0 +1,39 @@
+<table class="w-full text-sm">
+  <thead class="text-left text-slate-500 border-b">
+    <tr>
+      <th class="py-2">Fecha</th>
+      <th>Producto</th>
+      <th>Tipo</th>
+      <th>Cant</th>
+      <th>Proveedor</th>
+      <th>Motivo</th>
+    </tr>
+  </thead>
+
+  <tbody>
+  {% for m in movimientos %}
+    <tr class="border-b hover:bg-slate-50">
+      <td class="py-2">{{ m.creado|date:"Y-m-d H:i" }}</td>
+      <td>{{ m.producto.nombre }}</td>
+      <td>
+        <span class="px-2 py-1 rounded text-xs
+          {% if m.tipo == 'ENTRADA' %} bg-emerald-100 text-emerald-700
+          {% elif m.tipo == 'SALIDA' %} bg-red-100 text-red-700
+          {% else %} bg-slate-100 text-slate-600{% endif %}">
+          {{ m.tipo }}
+        </span>
+      </td>
+      <td class="tabular-nums font-semibold">{{ m.cantidad }}</td>
+      <td>{{ m.producto.proveedor.nombre|default:"—" }}</td>
+      <td class="text-slate-600">{{ m.motivo|default:"—" }}</td>
+    </tr>
+  {% empty %}
+    <tr>
+      <td colspan="6" class="py-4 text-center text-slate-500">
+        Sin resultados
+      </td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-slate-800 mb-6">
+  👋 Bienvenido, {{ user.first_name|default:user.username }}
+</h1>
+
+<p class="text-slate-600 mb-6">
+  Selecciona un módulo para continuar.
+</p>
+
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+
+  {% if puede_inventario %}
+  <a href="{% url 'inventario:dashboard' %}"
+     class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
+    <div class="text-4xl mb-3">📦</div>
+    <div class="text-xl font-semibold">Inventario</div>
+    <p class="text-slate-500 text-sm">Movimientos, stock, ajustes y reportes.</p>
+  </a>
+  {% endif %}
+
+  {% if puede_compras %}
+  <a href="{% url 'compras:dashboard' %}"
+     class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
+    <div class="text-4xl mb-3">🧾</div>
+    <div class="text-xl font-semibold">Compras</div>
+    <p class="text-slate-500 text-sm">Registrar compras y ver historial.</p>
+  </a>
+  {% endif %}
+  {% if puede_ventas %}
+  <a href="{% url 'ventas:dashboard' %}"
+     class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
+    <div class="text-4xl mb-3">💰</div>
+    <div class="text-xl font-semibold">Ventas</div>
+    <p class="text-slate-500 text-sm">POS, facturación y reportes de ventas.</p>
+  </a>
+  {% endif %}
+{% if puede_facturas %}
+<a href="{% url 'facturas:dashboard' %}"
+   class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
+  <div class="text-4xl mb-3">🧾</div>
+  <div class="text-xl font-semibold">Facturas</div>
+  <p class="text-slate-500 text-sm">Historial de facturas emitidas y recibidas.</p>
+</a>
+{% endif %}
+
+  {% if puede_maestros %}
+  <a href="maestros/dashboard/"
+     class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
+    <div class="text-4xl mb-3">📚</div>
+    <div class="text-xl font-semibold">Maestros</div>
+    <p class="text-slate-500 text-sm">Productos, categorías y proveedores.</p>
+  </a>
+  {% endif %}
+
+  <a href="http://192.168.1.15/api/v1/"
+     class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
+    <div class="text-4xl mb-3">🧩</div>
+    <div class="text-xl font-semibold">API REST</div>
+    <p class="text-slate-500 text-sm">Explora los endpoints del sistema.</p>
+  </a>
+
+  <!-- Adminer -->
+  <a href="http://192.168.1.15:8080"
+     target="_blank"
+     class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
+    <div class="text-4xl mb-3">💾</div>
+    <div class="text-xl font-semibold">Adminer</div>
+    <p class="text-slate-500 text-sm">Gestor de base de datos (MySQL Primary / Replica).</p>
+  </a>
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,66 @@
+{% extends "unfold/layouts/base.html" %}
+
+{% block content %}
+<div class="min-h-screen flex items-center justify-center bg-gray-100">
+
+  <div class="bg-white shadow-xl rounded-xl p-8 w-full max-w-md border border-gray-200">
+    
+    <h1 class="text-3xl font-bold text-center mb-6 text-gray-800">
+      Bienvenido
+    </h1>
+
+    <p class="text-center text-gray-600 mb-6">
+      Ingresa tus credenciales para continuar
+    </p>
+
+    {% if form.errors %}
+    <div class="mb-4 p-3 bg-red-100 border border-red-300 text-red-700 rounded">
+      Usuario o contraseña incorrectos
+    </div>
+    {% endif %}
+
+    <form method="post" class="space-y-4">
+      {% csrf_token %}
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">
+          Usuario
+        </label>
+        <input
+          type="text"
+          name="{{ form.username.name }}"
+          value="{{ form.username.value|default:'' }}"
+          placeholder="Tu usuario"
+          autofocus
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+        >
+      </div>
+
+      <div>
+        <label class="block text-sm font-semibold text-gray-700 mb-1">
+          Contraseña
+        </label>
+        <input
+          type="password"
+          name="{{ form.password.name }}"
+          placeholder="********"
+          class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500"
+        >
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition"
+      >
+        Iniciar sesión
+      </button>
+    </form>
+
+    <p class="text-center text-gray-500 text-sm mt-6">
+      Sistema Interno —
+    </p>
+
+  </div>
+
+</div>
+{% endblock %}

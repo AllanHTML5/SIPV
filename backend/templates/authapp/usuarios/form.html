@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Usuario{% endblock %}
+
+{% block content %}
+<h1 class="text-3xl font-bold text-slate-800 mb-6">
+    {% if modo == "crear" %}➕ Nuevo Usuario{% else %}✏️ Editar Usuario{% endif %}
+</h1>
+
+<div class="bg-white shadow-xl rounded-xl p-8 border border-slate-200 max-w-4xl">
+
+<form method="POST">
+    {% csrf_token %}
+{% if form.errors %}
+<div class="mb-6 p-4 bg-red-100 border border-red-300 text-red-700 rounded-lg">
+    <strong class="block mb-2">Se encontraron errores:</strong>
+    <ul class="list-disc ml-6 space-y-1">
+        {% for field, errors in form.errors.items %}
+            {% for error in errors %}
+                <li><strong>{{ field }}:</strong> {{ error }}</li>
+            {% endfor %}
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        <div>
+            <label>Usuario</label>
+            {{ form.username }}
+        </div>
+
+        <div>
+            <label>Email</label>
+            {{ form.email }}
+        </div>
+
+        <div>
+            <label>Nombre</label>
+            {{ form.first_name }}
+        </div>
+
+        <div>
+            <label>Apellidos</label>
+            {{ form.last_name }}
+        </div>
+
+    </div>
+
+    <!-- Checks -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-6">
+
+        <label class="flex items-center gap-2">
+            {{ form.is_active }} Activo
+        </label>
+
+        <label class="flex items-center gap-2">
+            {{ form.is_staff }} Staff
+        </label>
+
+        <label class="flex items-center gap-2">
+            {{ form.is_superuser }} Superusuario
+        </label>
+
+    </div>
+
+    <!-- Grupos -->
+    <div class="mt-6">
+        <label>Grupos</label>
+        {{ form.groups }}
+    </div>
+
+    <!-- Permisos -->
+    <div class="mt-6">
+        <label>Permisos individuales</label>
+        {{ form.user_permissions }}
+    </div>
+
+    <div class="flex justify-end mt-10 gap-3">
+        <a href="{% url 'authapp:usuarios_lista' %}"
+           class="px-4 py-2 bg-slate-300 rounded-lg">Cancelar</a>
+
+        <button class="px-4 py-2 bg-blue-600 text-white rounded-lg">
+            Guardar
+        </button>
+    </div>
+</form>
+
+</div>
+
+{% endblock %}

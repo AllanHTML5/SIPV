@@ -1,0 +1,24 @@
+{% load i18n %}
+
+<div class="flex items-center gap-3">
+
+    <!-- Selector de acciones -->
+    <select name="action"
+            class="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none bg-white">
+        <option value="" selected>
+            — {% translate "Seleccionar acción" %} —
+        </option>
+
+        {% for action, name in actions.items %}
+            <option value="{{ action }}">{{ name }}</option>
+        {% endfor %}
+    </select>
+
+    <!-- Botón ejecutar -->
+    <button type="submit"
+            class="px-4 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition"
+            name="index"
+            value="{{ action_index }}">
+        {% translate "Ejecutar" %}
+    </button>
+</div>

@@ -1,0 +1,76 @@
+{% if page.object_list %}
+<table class="w-full text-sm text-slate-700">
+  <thead class="text-left text-slate-500 border-b bg-slate-50">
+    <tr>
+      <th class="py-2 px-2">Producto</th>
+      <th class="py-2 px-2">Código</th>
+      <th class="py-2 px-2">Proveedor</th>
+      <th class="py-2 px-2">Precio</th>
+      <th class="py-2 px-2 text-right">Mín</th>
+      <th class="py-2 px-2 text-right">Stock</th>
+      <th class="py-2 px-2">Agregado</th>
+    </tr>
+  </thead>
+
+  <tbody>
+    {% for p in page.object_list %}
+      <tr class="border-b hover:bg-slate-100 transition">
+        <td class="py-2 px-2 font-medium">{{ p.nombre }}</td>
+        <td class="py-2 px-2">{{ p.codigo_barras|default:"—" }}</td>
+        <td class="py-2 px-2">{{ p.proveedor.nombre|default:"—" }}</td>
+
+        <td class="py-2 px-2">L {{ p.costo_promedio|floatformat:2 }}</td>
+
+        <td class="py-2 px-2 text-right">
+          {{ p.stock_minimo|floatformat:0 }}
+        </td>
+
+        <td class="py-2 px-2 text-right font-semibold
+          {% if p.stock <= p.stock_minimo %}
+            text-red-600
+          {% else %}
+            text-emerald-600
+          {% endif %}
+        ">
+          {{ p.stock|floatformat:0 }}
+        </td>
+       <td class="tabular-nums">
+  {{ p.creado|date:"Y-m-d" }}
+</td>
+
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<div class="flex items-center justify-between mt-4 text-sm text-slate-600">
+  <span>Página {{ page.number }} de {{ page.paginator.num_pages }}</span>
+
+  <div class="flex gap-2">
+    {% if page.has_previous %}
+      <button
+        hx-get="?page={{ page.previous_page_number }}"
+        hx-target="#stock-table"
+        hx-trigger="click"
+        hx-include="#stock-filters"
+        class="px-3 py-1 rounded border"
+      >Anterior</button>
+    {% endif %}
+
+    {% if page.has_next %}
+      <button
+        hx-get="?page={{ page.next_page_number }}"
+        hx-target="#stock-table"
+        hx-trigger="click"
+        hx-include="#stock-filters"
+        class="px-3 py-1 rounded border"
+      >Siguiente</button>
+    {% endif %}
+  </div>
+</div>
+
+{% else %}
+
+<div class="py-6 text-center text-slate-500">Sin resultados</div>
+
+{% endif %}

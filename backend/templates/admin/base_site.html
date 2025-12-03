@@ -1,0 +1,57 @@
+{% extends "admin/base.html" %}
+{% load static %}
+
+{% block title %}SIPV ADMIN{% endblock %}
+
+{% block branding %}
+    <div class="flex items-center gap-2">
+        <img src="{% static 'img/logo.png' %}" style="height:40px;" alt="SIPV Logo">
+{% block extra_styles %}
+<style>
+
+#content > .messagelist {
+    margin-bottom: 15px;
+}
+
+.action-bar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.action-bar select {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: 1px solid #d0d7de;
+    background: white;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+    font-size: 14px;
+}
+
+.action-bar select:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 2px #60a5fa;
+}
+
+.action-bar button {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid #2563eb;
+    background: #3b82f6;
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+}
+.action-bar button:hover {
+    background: #2563eb;
+}
+</style>
+{% endblock %}
+
+
+        <h1 id="site-name" style="font-size:22px; font-weight:700;">
+            SIPV ADMIN
+        </h1>
+    </div>
+{% endblock %}
+

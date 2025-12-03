@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="flex justify-between items-center mb-6">
+
+    <h1 class="text-3xl font-bold text-slate-800">Proveedores</h1>
+
+    <a href="{% url 'maestros:proveedores_crear' %}"
+       class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-3 rounded-lg shadow">
+        ➕ Nuevo Proveedor
+    </a>
+</div>
+
+<div class="bg-white border border-slate-200 rounded-xl shadow overflow-hidden">
+
+    <table class="min-w-full text-left">
+        <thead class="bg-slate-100 text-slate-700">
+            <tr>
+                <th class="py-3 px-4">Nombre</th>
+                <th class="py-3 px-4">Teléfono</th>
+                <th class="py-3 px-4">Email</th>
+                <th class="py-3 px-4 w-40 text-center">Acciones</th>
+            </tr>
+        </thead>
+
+        <tbody class="divide-y divide-slate-200">
+            {% for p in proveedores %}
+            <tr class="hover:bg-slate-50 transition">
+
+                <td class="py-3 px-4 font-semibold">{{ p.nombre }}</td>
+                <td class="py-3 px-4">{{ p.telefono|default:"—" }}</td>
+                <td class="py-3 px-4">{{ p.email|default:"—" }}</td>
+
+                <td class="py-3 px-4 text-center">
+                    <a href="{% url 'maestros:proveedores_editar' p.id %}" class="text-blue-600 hover:underline">Editar</a>
+                    |
+                    <a href="{% url 'maestros:proveedores_eliminar' p.id %}" class="text-red-600 hover:underline">Eliminar</a>
+                </td>
+
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="py-4 text-center text-slate-500">No hay proveedores.</td></tr>
+            {% endfor %}
+        </tbody>
+
+    </table>
+</div>
+
+{% endblock %}

@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Listado de Ventas{% endblock %}
+
+{% block content %}
+<h1 class="text-2xl font-bold mb-4 flex items-center gap-2">
+    <i class="bi bi-receipt text-sky-600"></i> Ventas
+</h1>
+
+<div class="bg-white p-4 rounded-xl shadow border border-slate-200 mb-4">
+
+    <!-- Filtros -->
+    <form method="get" class="grid grid-cols-1 md:grid-cols-6 gap-3 text-sm">
+
+        <input name="q" type="text" class="border rounded px-2 py-1"
+               placeholder="Buscar #venta o cliente..."
+               value="{{ q }}">
+
+        <input name="fecha_desde" type="date" class="border rounded px-2 py-1"
+               value="{{ fecha_desde }}">
+
+        <input name="fecha_hasta" type="date" class="border rounded px-2 py-1"
+               value="{{ fecha_hasta }}">
+
+        <select name="estado" class="border rounded px-2 py-1">
+            <option value="">Estado</option>
+            <option value="PAGADA" {% if estado == "PAGADA" %}selected{% endif %}>Pagada</option>
+            <option value="BORRADOR" {% if estado == "BORRADOR" %}selected{% endif %}>Borrador</option>
+            <option value="CANCELADA" {% if estado == "CANCELADA" %}selected{% endif %}>Cancelada</option>
+        </select>
+
+        <select name="metodo" class="border rounded px-2 py-1">
+            <option value="">Método Pago</option>
+            <option value="EFECTIVO" {% if metodo == "EFECTIVO" %}selected{% endif %}>Efectivo</option>
+            <option value="TARJETA" {% if metodo == "TARJETA" %}selected{% endif %}>Tarjeta</option>
+        </select>
+
+        <button class="px-3 py-2 bg-sky-600 text-white rounded">Filtrar</button>
+    </form>
+</div>
+
+
+<!-- Tarjetas de estadísticas -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+
+    <div class="bg-white p-4 rounded-xl shadow border">
+        <div class="text-xs text-slate-500">Total vendido</div>
+        <div class="text-xl font-bold text-emerald-600">L {{ stats.total_ventas|default:0 }}</div>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow border">
+        <div class="text-xs text-slate-500">Total impuestos</div>
+        <div class="text-xl font-bold text-orange-600">L {{ stats.total_impuestos|default:0 }}</div>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow border">
+        <div class="text-xs text-slate-500">Total descuento</div>
+        <div class="text-xl font-bold text-rose-600">L {{ stats.total_descuento|default:0 }}</div>
+    </div>
+
+    <div class="bg-white p-4 rounded-xl shadow border">
+        <div class="text-xs text-slate-500">Efectivo / Tarjeta</div>
+        <div class="text-lg font-semibold">
+            Efectivo: L {{ total_efectivo }} <br>
+            Tarjeta: L {{ total_tarjeta }}
+        </div>
+    </div>
+
+</div>
+
+
+<!-- Tabla -->
+<div class="bg-white p-4 rounded-xl shadow border border-slate-200">
+    <table class="w-full text-sm">
+        <thead class="border-b text-slate-500">
+            <tr>
+                <th class="py-2 text-left">#</th>
+                <th>Fecha</th>
+                <th>Cajero</th>
+                <th>Cliente</th>
+                <th class="text-right">Subtotal</th>
+                <th class="text-right">ISV</th>
+                <th class="text-right">Total</th>
+                <th>Pago</th>
+                <th>Estado</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for v in page %}
+            <tr class="border-b">
+                <td class="py-2">{{ v.numero }}</td>
+                <td>{{ v.creado|date:"Y-m-d H:i" }}</td>
+                <td>{{ v.cajero.username }}</td>
+                <td>{{ v.cliente.nombre|default:"-" }}</td>
+                <td class="text-right">L {{ v.subtotal }}</td>
+                <td class="text-right">L {{ v.impuesto }}</td>
+                <td class="text-right font-semibold">L {{ v.total }}</td>
+                <td>{{ v.metodo_pago }}</td>
+                <td>
+                    <span class="px-2 py-1 rounded text-xs bg-slate-100">{{ v.estado }}</span>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="9" class="py-4 text-center text-slate-500">Sin resultados</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- paginación -->
+    <div class="mt-4">
+        {% include "partials/pagination.html" with page=page %}
+    </div>
+</div>
+
+{% endblock %}

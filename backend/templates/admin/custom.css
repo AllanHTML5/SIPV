@@ -1,0 +1,7 @@
+#changelist-form div.actions {
+    padding: 10px 0;
+}
+
+#changelist-form .actions select {
+    min-width: 220px;
+}

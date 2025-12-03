@@ -1,0 +1,258 @@
+{% extends "base.html" %}
+{% block title %}Ventas - Dashboard{% endblock %}
+
+{% block content %}
+
+<h1 class="text-3xl font-bold mb-4">📊 Dashboard de Ventas</h1>
+<!-- BOTÓN CREAR NUEVA VENTA -->
+<div class="mb-4">
+    <a href="{% url 'ventas:crear_orden' %}"
+       class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 shadow">
+        ➕ Nueva Venta
+    </a>
+</div>
+<!-- BOTÓN VER CRÉDITOS -->
+<div class="mb-6">
+    <a href="{% url 'ventas:cartera_dashboard' %}"
+       class="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg shadow">
+        <span>💳</span>
+        Créditos de Clientes
+    </a>
+</div>
+
+
+<!-- TARJETAS -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+    <!-- Total de Hoy -->
+    <div class="bg-white shadow p-5 rounded-xl border border-slate-200 relative"
+         x-data="{show:false}"
+         @mouseenter="show=true"
+         @mouseleave="show=false">
+
+        <p class="text-slate-500 text-sm">Total de Hoy</p>
+        <p class="text-2xl font-bold">L {{ total_dia|floatformat:2 }}</p>
+
+        <div x-show="show" x-transition
+             class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-3 py-1 rounded-lg shadow-lg">
+            Monto total vendido hoy
+        </div>
+    </div>
+
+    <!-- Total del Mes -->
+    <div class="bg-white shadow p-5 rounded-xl border border-slate-200 relative"
+         x-data="{show:false}"
+         @mouseenter="show=true"
+         @mouseleave="show=false">
+
+        <p class="text-slate-500 text-sm">Total del Mes</p>
+        <p class="text-2xl font-bold">L {{ total_mes|floatformat:2 }}</p>
+
+        <div x-show="show" x-transition
+             class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-3 py-1 rounded-lg shadow-lg">
+            Ventas del mes en curso
+        </div>
+    </div>
+
+    <!-- Ventas Totales -->
+    <div class="bg-white shadow p-5 rounded-xl border border-slate-200 relative"
+         x-data="{show:false}"
+         @mouseenter="show=true"
+         @mouseleave="show=false">
+
+        <p class="text-slate-500 text-sm">Ventas Totales</p>
+        <p class="text-2xl font-bold">{{ total_ventas }}</p>
+
+        <div x-show="show" x-transition
+             class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-xs px-3 py-1 rounded-lg shadow-lg">
+            Número total de transacciones registradas
+        </div>
+    </div>
+</div>
+
+<!-- GRÁFICAS -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-10">
+
+    <div class="bg-white shadow border border-slate-200 rounded-xl p-4">
+        <h2 class="text-lg font-semibold mb-2">📈 Ventas por Día</h2>
+        <canvas id="chartVentasDia" height="120"></canvas>
+    </div>
+
+    <div class="bg-white shadow border border-slate-200 rounded-xl p-4">
+        <h2 class="text-lg font-semibold mb-2">📊 Ventas por Cajero</h2>
+        <canvas id="chartVentasCajero" height="120"></canvas>
+    </div>
+</div>
+
+<!-- FILTROS -->
+<form class="bg-white p-4 rounded-xl shadow border border-slate-200 mb-6 grid grid-cols-1 md:grid-cols-6 gap-4">
+
+    <div>
+        <label class="text-sm text-slate-500">Fecha Inicio</label>
+        <input type="date" id="inicio" name="inicio"
+               value="{{ fecha_inicio|default:'' }}"
+               class="input w-full">
+    </div>
+
+    <div>
+        <label class="text-sm text-slate-500">Fecha Fin</label>
+        <input type="date" id="fin" name="fin"
+               value="{{ fecha_fin|default:'' }}"
+               class="input w-full">
+    </div>
+
+    <div>
+        <label class="text-sm text-slate-500">Cajero</label>
+        <input type="text" id="usuario" name="usuario"
+               placeholder="Nombre..."
+               value="{{ request.GET.usuario|default:'' }}"
+               class="input w-full">
+    </div>
+
+    <!-- NUEVO: FILTRO CLIENTE -->
+    <div>
+        <label class="text-sm text-slate-500">Cliente</label>
+        <input type="text" id="cliente" name="cliente"
+               placeholder="Nombre cliente..."
+               value="{{ request.GET.cliente|default:'' }}"
+               class="input w-full">
+    </div>
+
+    <!-- NUEVO: FILTRO ESTADO -->
+    <div>
+        <label class="text-sm text-slate-500">Estado</label>
+        <select name="estado" class="input w-full">
+            <option value="">Todos</option>
+            <option value="BORRADOR" {% if request.GET.estado == "BORRADOR" %}selected{% endif %}>BORRADOR</option>
+            <option value="PAGADA" {% if request.GET.estado == "PAGADA" %}selected{% endif %}>PAGADA</option>
+            <option value="COMPLETADA" {% if request.GET.estado == "COMPLETADA" %}selected{% endif %}>COMPLETADA</option>
+            <option value="ANULADA" {% if request.GET.estado == "ANULADA" %}selected{% endif %}>ANULADA</option>
+            <option value="CANCELADA" {% if request.GET.estado == "CANCELADA" %}selected{% endif %}>CANCELADA</option>
+        </select>
+    </div>
+
+    <div class="flex items-end">
+        <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 w-full">
+            Filtrar
+        </button>
+    </div>
+</form>
+
+
+
+
+<!-- TABLA DE VENTAS -->
+<div class="bg-white shadow border border-slate-200 rounded-xl p-4 mb-10">
+    <h2 class="text-xl font-semibold mb-4">🧾 Lista de Ventas</h2>
+
+    <div class="overflow-x-auto max-h-[400px] overflow-y-auto rounded-lg">
+        <table class="w-full text-left">
+            <thead class="bg-slate-100 text-slate-600 sticky top-0">
+                <tr>
+                    <th class="p-2">Fecha</th>
+                    <th class="p-2">Cajero</th>
+                    <th class="p-2">Cliente</th>
+                    <th class="p-2">Estado</th>
+                    <th class="p-2">Total</th>
+                    <th class="p-2 text-center">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for v in ventas %}
+                <tr class="border-t hover:bg-slate-50">
+                    <td class="p-2">{{ v.creado|date:"d/m/Y H:i" }}</td>
+                    <td class="p-2">{{ v.creado_por.username }}</td>
+                    <td class="p-2">{{ v.cliente.nombre|default:"—" }}</td>
+
+                    <td class="p-2">
+                        <span class="px-2 py-1 rounded text-xs font-semibold
+                            {% if v.estado == 'PAGADA' %} bg-green-100 text-green-700
+                            {% elif v.estado == 'BORRADOR' %} bg-yellow-100 text-yellow-700
+                            {% elif v.estado == 'ANULADA' %} bg-red-100 text-red-700
+                            {% elif v.estado == 'CANCELADA' %} bg-gray-200 text-gray-700
+                            {% else %} bg-blue-100 text-blue-700 {% endif %}
+                        ">
+                            {{ v.estado }}
+                        </span>
+                    </td>
+
+                    <td class="p-2 font-semibold">L {{ v.total|floatformat:2 }}</td>
+
+                    <td class="p-2 text-center">
+                        <a href="{% url 'ventas:detalle' v.id %}"
+                           class="px-3 py-1 rounded-lg text-white bg-blue-600 hover:bg-blue-700 text-sm shadow">
+                            Ver detalle
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center p-4 text-slate-500">No hay ventas</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- VENTAS RECIENTES -->
+<div class="bg-white shadow border border-slate-200 rounded-xl p-4">
+    <h2 class="text-xl font-semibold mb-4">⏱ Ventas Recientes</h2>
+
+    <ul class="space-y-2">
+        {% for v in recientes %}
+        <li class="p-3 border rounded-lg hover:bg-slate-50 flex items-center justify-between gap-4">
+
+            <div class="flex flex-col">
+                <span class="font-medium">{{ v.creado|date:"d/m H:i" }}</span>
+                <span class="text-slate-600 text-sm">
+                    {{ v.creado_por.username }}
+                </span>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <span class="font-bold text-green-600">L {{ v.total|floatformat:2 }}</span>
+
+                <a href="{% url 'ventas:detalle' v.id %}"
+                   class="px-3 py-1 rounded-lg text-white bg-blue-600 hover:bg-blue-700 text-sm shadow">
+                    Ver detalle
+                </a>
+            </div>
+
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    const ventasDias = {{ grafica_dias|safe }};
+    const ventasCajeros = {{ grafica_cajeros|safe }};
+
+    new Chart(document.getElementById('chartVentasDia'), {
+        type: 'line',
+        data: {
+            labels: ventasDias.labels || [],
+            datasets: [{
+                label: "Lempiras",
+                data: ventasDias.data || [],
+                borderWidth: 2,
+                tension: .35
+            }]
+        }
+    });
+
+    new Chart(document.getElementById('chartVentasCajero'), {
+        type: 'bar',
+        data: {
+            labels: ventasCajeros.labels || [],
+            datasets: [{
+                label: "Total vendido",
+                data: ventasCajeros.data || [],
+                borderWidth: 2
+            }]
+        }
+    });
+</script>
+
+{% endblock %}

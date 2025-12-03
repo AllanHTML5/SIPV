@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="flex justify-between items-center mb-6">
+    <h1 class="text-3xl font-bold text-slate-800">{{ titulo }}</h1>
+
+    <a href="{% url volver_url %}"
+       class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-5 py-3 rounded-lg shadow">
+        ⬅ Volver
+    </a>
+</div>
+
+<div class="bg-white p-6 shadow rounded-xl border border-slate-200 max-w-xl">
+
+    <form method="POST" novalidate>
+        {% csrf_token %}
+
+        <!-- Nombre -->
+        <label class="block font-semibold text-slate-700 mb-1">Nombre</label>
+        <input type="text" name="nombre"
+            value="{{ form.nombre.value|default:'' }}"
+            class="w-full px-4 py-3 border rounded-lg
+                {% if form.nombre.errors %}
+                    border-red-500 focus:ring-red-400
+                {% else %}
+                    border-slate-300 focus:ring-blue-500
+                {% endif %}
+            ">
+        {% for e in form.nombre.errors %}
+            <p class="text-red-600 text-sm mt-1">{{ e }}</p>
+        {% endfor %}
+
+        <!-- Descripción -->
+        <label class="block font-semibold text-slate-700 mt-4 mb-1">Descripción</label>
+        <textarea name="descripcion"
+            class="w-full px-4 py-3 border rounded-lg h-24
+                {% if form.descripcion.errors %}
+                    border-red-500 focus:ring-red-400
+                {% else %}
+                    border-slate-300 focus:ring-blue-500
+                {% endif %}
+            ">{{ form.descripcion.value|default:'' }}</textarea>
+        {% for e in form.descripcion.errors %}
+            <p class="text-red-600 text-sm mt-1">{{ e }}</p>
+        {% endfor %}
+
+        <!-- Estado -->
+        <label class="block font-semibold text-slate-700 mt-4 mb-1">Estado</label>
+        {{ form.estado }}
+
+        <button type="submit"
+                class="mt-6 bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-3 rounded-lg shadow">
+            {{ boton }}
+        </button>
+
+    </form>
+</div>
+
+{% endblock %}

@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Detalle Permiso{% endblock %}
+{% block content %}
+
+<h1 class="text-3xl font-bold text-slate-800 mb-6">🔐 Detalle del Permiso</h1>
+
+<div class="bg-white shadow-xl rounded-xl p-8 border border-slate-200 max-w-2xl">
+
+    <p class="mb-4"><strong>App:</strong> {{ permiso.content_type.app_label }}</p>
+    <p class="mb-4"><strong>Modelo:</strong> {{ permiso.content_type.model }}</p>
+    <p class="mb-6"><strong>Nombre:</strong> {{ permiso.name }}</p>
+
+    <h2 class="font-semibold text-xl mb-3">Usuarios que lo tienen</h2>
+    <ul class="list-disc ml-6 mb-6">
+        {% for u in usuarios %}
+            <li>{{ u.username }}</li>
+        {% empty %}
+            <li class="text-slate-500">Nadie.</li>
+        {% endfor %}
+    </ul>
+
+    <a href="{% url 'authapp:permisos_lista' %}"
+       class="px-4 py-2 bg-slate-300 rounded-lg hover:bg-slate-400">
+        Volver
+    </a>
+
+</div>
+
+{% endblock %}

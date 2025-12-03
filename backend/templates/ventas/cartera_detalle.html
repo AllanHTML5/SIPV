@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Botones superiores -->
+<div class="flex justify-between items-center mb-6">
+    
+    <div class="flex gap-3">
+        <!-- Volver al Dashboard -->
+        <a href="{% url 'ventas:cartera_dashboard' %}"
+           class="inline-flex items-center gap-2 bg-slate-700 hover:bg-slate-800 text-white px-4 py-2 rounded-lg shadow">
+            <span>📊</span>
+            Dashboard Cartera
+        </a>
+
+        <!-- Volver a la lista de cuentas -->
+        <a href="{% url 'ventas:cartera_pendientes' %}"
+           class="inline-flex items-center gap-2 bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg shadow">
+            <span>📁</span>
+            Volver a Pendientes
+        </a>
+    </div>
+
+    <!-- ESTADO DEL CLIENTE (PRO) -->
+    <div class="relative group">
+        {% if cuenta.saldo_pendiente <= 0 %}
+            <span class="px-4 py-2 rounded-lg font-semibold border 
+                         bg-green-100 text-green-800 border-green-300 shadow cursor-pointer">
+                SOLVENTE 🟢
+            </span>
+        {% elif cuenta.fecha_vencimiento < today %}
+            <span class="px-4 py-2 rounded-lg font-semibold border 
+                         bg-red-100 text-red-800 border-red-300 shadow cursor-pointer">
+                VENCIDO 🔴
+            </span>
+        {% else %}
+            <span class="px-4 py-2 rounded-lg font-semibold border 
+                         bg-yellow-100 text-yellow-800 border-yellow-300 shadow cursor-pointer">
+                PENDIENTE 🟡
+            </span>
+        {% endif %}
+
+        <!-- Tooltip -->
+        <div class="absolute right-0 mt-2 w-60 p-3 bg-white border border-slate-300 rounded-lg shadow-xl opacity-0
+                    group-hover:opacity-100 transition pointer-events-none z-20">
+            <p class="text-slate-700 text-sm leading-tight">
+                Estado del cliente basado en su saldo pendiente y fecha de vencimiento.
+            </p>
+        </div>
+    </div>
+
+</div>
+
+</div class="relative group">
+<h1 class="text-3xl font-bold text-slate-800 mb-6">
+    Detalle de Cuenta — {{ cuenta.cliente.nombre }}
+    
+</h1>
+<a href="{% url 'ventas:detalle_credito_cliente' cuenta.cliente.id %}"
+   class="inline-flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg shadow">
+    📘 Ver Estado de Cuenta
+</a>
+</div>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+
+    <!-- Información General -->
+    <div class="p-6 bg-white border border-slate-200 shadow rounded-xl">
+        <h2 class="font-semibold text-slate-700 mb-3">Información General</h2>
+
+        <p><strong>Venta:</strong> #{{ cuenta.venta.numero }}</p>
+
+<!-- Botones ver factura (solo si existe factura asociada) -->
+{% if factura %}
+<div class="mt-4 flex gap-3">
+
+    <!-- Ver Factura PDF -->
+    <a href="{% url 'facturas:factura_pdf' factura.id %}"
+       target="_blank"
+       class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow">
+        📄 Ver Factura PDF
+    </a>
+
+    <!-- Ver Ticket -->
+    <a href="{% url 'facturas:factura_ticket' factura.id %}"
+       target="_blank"
+       class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg shadow">
+        🎫 Ver Ticket
+    </a>
+
+</div>
+{% else %}
+<p class="mt-4 text-slate-500 text-sm italic">
+    Esta venta aún no tiene factura generada.
+</p>
+{% endif %}
+
+
+        <p><strong>Monto:</strong> L. {{ cuenta.monto_total }}</p>
+
+        <p><strong>Saldo Pendiente:</strong> 
+            <span class="text-blue-700 font-bold">
+                L. {{ cuenta.saldo_pendiente }}
+            </span>
+        </p>
+
+        <p><strong>Fecha de Vencimiento:</strong> {{ cuenta.fecha_vencimiento }}</p>
+    </div>
+
+    <!-- Registrar Abono -->
+    <div class="p-6 bg-white border border-slate-200 shadow rounded-xl">
+        <h2 class="font-semibold text-slate-700 mb-3">Abonar</h2>
+
+        {% if cuenta.saldo_pendiente > 0 %}
+            <a href="{% url 'ventas:abono_create' cuenta.id %}"
+            class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg shadow">
+                <span>➕</span>
+                Registrar abono
+            </a>
+        {% else %}
+            <p class="text-emerald-600 font-semibold">La cuenta está completamente pagada.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<h2 class="text-2xl font-bold text-slate-800 mb-4">Historial de Abonos</h2>
+
+<table class="min-w-full bg-white border border-slate-200 rounded-xl shadow overflow-hidden">
+    <thead class="bg-slate-100 text-slate-800">
+        <tr>
+            <th class="py-3 px-4 text-left">Monto</th>
+            <th class="py-3 px-4 text-left">Fecha</th>
+        </tr>
+    </thead>
+
+    <tbody class="divide-y divide-slate-200">
+        {% for ab in abonos %}
+        <tr class="hover:bg-slate-50 transition">
+            <td class="py-3 px-4 font-semibold">L. {{ ab.monto }}</td>
+            <td class="py-3 px-4">{{ ab.fecha }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="2" class="py-4 text-center text-slate-500">
+                No hay abonos registrados.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
