@@ -55,9 +55,6 @@ staticfiles/
 static/
 media/
 
-# archvs generados por collectstatic
-backend/staticfiles/
-backend/static/
 
 
 .vscode/
@@ -85,3 +82,4 @@ migrations/*__pycache__/
 .coverage
 coverage.xml
 htmlcov/
+
