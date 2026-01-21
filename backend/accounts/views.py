@@ -6,7 +6,8 @@ def login_view(request):
     if request.user.is_authenticated:
         return redirect("/")
 
-    next_url = request.GET.get("next", "/")
+
+    next_url = (request.POST.get("next") or request.GET.get("next") or "/").strip() or "/"
 
     if request.method == "POST":
         username = request.POST.get("username")
@@ -20,9 +21,7 @@ def login_view(request):
         else:
             messages.error(request, "Usuario o contraseña incorrectos.")
 
-    return render(request, "accounts/login.html", {
-        "next": next_url
-    })
+    return render(request, "accounts/login.html", {"next": next_url})
 
 
 def logout_view(request):
