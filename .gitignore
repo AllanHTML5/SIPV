@@ -51,8 +51,7 @@ tmp/
 
 
 
-staticfiles/
-static/
+
 media/
 
 
@@ -82,4 +81,5 @@ migrations/*__pycache__/
 .coverage
 coverage.xml
 htmlcov/
+
 
