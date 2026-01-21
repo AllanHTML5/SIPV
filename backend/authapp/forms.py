@@ -94,7 +94,7 @@ class PasswordChangeForm(forms.Form):
 
 # FORMULARIO GRUPOS
 
-class GrupoForm(forms.ModelForm):s
+class GrupoForm(forms.ModelForm):
     permisos_asignados = forms.ModelMultipleChoiceField(
         queryset=Permission.objects.none(),
         required=False,
