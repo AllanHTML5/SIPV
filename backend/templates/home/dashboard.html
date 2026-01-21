@@ -29,6 +29,7 @@
     <p class="text-slate-500 text-sm">Registrar compras y ver historial.</p>
   </a>
   {% endif %}
+
   {% if puede_ventas %}
   <a href="{% url 'ventas:dashboard' %}"
      class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
@@ -37,17 +38,18 @@
     <p class="text-slate-500 text-sm">POS, facturación y reportes de ventas.</p>
   </a>
   {% endif %}
-{% if puede_facturas %}
-<a href="{% url 'facturas:dashboard' %}"
-   class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
-  <div class="text-4xl mb-3">🧾</div>
-  <div class="text-xl font-semibold">Facturas</div>
-  <p class="text-slate-500 text-sm">Historial de facturas emitidas y recibidas.</p>
-</a>
-{% endif %}
+
+  {% if puede_facturas %}
+  <a href="{% url 'facturas:dashboard' %}"
+     class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
+    <div class="text-4xl mb-3">🧾</div>
+    <div class="text-xl font-semibold">Facturas</div>
+    <p class="text-slate-500 text-sm">Historial de facturas emitidas y recibidas.</p>
+  </a>
+  {% endif %}
 
   {% if puede_maestros %}
-  <a href="maestros/dashboard/"
+  <a href="{% url 'maestros:dashboard' %}"
      class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
     <div class="text-4xl mb-3">📚</div>
     <div class="text-xl font-semibold">Maestros</div>
@@ -55,22 +57,32 @@
   </a>
   {% endif %}
 
-  <a href="http://192.168.1.15/api/v1/"
+  <a href="{% url 'api-root' %}"
      class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
     <div class="text-4xl mb-3">🧩</div>
     <div class="text-xl font-semibold">API REST</div>
     <p class="text-slate-500 text-sm">Explora los endpoints del sistema.</p>
   </a>
 
-  <!-- Adminer -->
-  <a href="http://192.168.1.15:8080"
+  {% if user.is_staff %}
+  <a href="{% url 'admin:index' %}"
      target="_blank"
+     class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
+    <div class="text-4xl mb-3">🛡️</div>
+    <div class="text-xl font-semibold">Django Admin</div>
+    <p class="text-slate-500 text-sm">Administración avanzada del sistema.</p>
+  </a>
+
+
+  {% if user.is_staff %}
+  <a href="http://{{ request.get_host }}:8080"
+     target="_blank"
+     rel="noopener noreferrer"
      class="block bg-white shadow rounded-xl p-6 hover:shadow-lg transition border border-slate-200">
     <div class="text-4xl mb-3">💾</div>
     <div class="text-xl font-semibold">Adminer</div>
-    <p class="text-slate-500 text-sm">Gestor de base de datos (MySQL Primary / Replica).</p>
+    <p class="text-slate-500 text-sm">Gestor de base de datos.</p>
   </a>
-
+    {% endif %}
 </div>
-
 {% endblock %}
