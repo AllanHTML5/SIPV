@@ -72,7 +72,7 @@
     <div class="text-xl font-semibold">Django Admin</div>
     <p class="text-slate-500 text-sm">Administración avanzada del sistema.</p>
   </a>
-
+    {% endif %}
 
   {% if user.is_staff %}
   <a href="http://{{ request.get_host }}:8080"
